@@ -1,0 +1,8 @@
+# Build directory
+build/
+
+# Executable
+shi
+
+# Object files in root (if any)
+*.o
