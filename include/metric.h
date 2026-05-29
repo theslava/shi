@@ -35,7 +35,7 @@ metric * new_metric() {
 }
 
 metric * new_metric_from_file(fr_fd *file) {
-	unsigned int i;
+	int i;
 	metric * met = new_metric();
 	while ((i = fr_read(file)) != EOF) {
 		met->characters[i]++;
@@ -44,7 +44,7 @@ metric * new_metric_from_file(fr_fd *file) {
 }
 
 void fill_metric(metric* met, fr_fd *file) {
-	unsigned int i;
+	int i;
 	while ((i = fr_read(file)) != EOF) {
 		met->characters[i]++;
 	}
@@ -57,3 +57,4 @@ void delete_metric (metric* met) {
 }
 
 #endif
+
