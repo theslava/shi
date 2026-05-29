@@ -93,7 +93,7 @@ void fr_done(fr_fd *fd) {
 }
 
 // output current info of the file
-fr_info(fr_fd *fd) {
+void fr_info(fr_fd *fd) {
 	fprintf(stderr, "File path = %s\n", fd->file_path);
 	fprintf(stderr, "Descriptor = %d\n", fd->file);
 	fprintf(stderr, "Current buffer = \n%s\n", fd->buffer);

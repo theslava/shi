@@ -22,7 +22,7 @@
 
 #include "node.h"
 
-inline void swap(node **heap, int count) {
+void swap(node **heap, int count) {
 	node *tmp = heap[0];
 	heap[0] = heap[count];
 	heap[count] = tmp;
