@@ -39,9 +39,6 @@ static inline int compare_nodes (const node *a, const node *b) {
 	else return 0;
 }
 
-// Forward declarations for functions defined in main.c
-void swap(node **a, node **b);
-void headify(node **heap, int size, int i);
 
 #endif /* NODE_H */
 
