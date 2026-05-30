@@ -18,15 +18,11 @@ static inline void swap_nodes(node **x, node **y) {
 	*y = temp;
 }
 
-//compare nodes for heapsort
-static inline int compare_nodes (node *a, node *b) {
-	return compare_nodes_weight (a, b);
-}
-
-//swap the elements in the given array
-static inline void swap_strings(char *x, char *y) {
-	char *temp = x;
-	x = y;
+// compare_nodes is defined in node.h — do not redefine here
+// swap the string pointers (not individual chars)
+static inline void swap_strings(char **x, char **y) {
+	char *temp = *x;
+	*x = *y;
 	*y = temp;
 }
 static inline void swap_heap(node **heap, int count) {

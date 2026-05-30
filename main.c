@@ -37,6 +37,10 @@
 #include "tree.h"
 #include "huffman.h"
 
+void compress();
+void swap(node **a, node **b);
+void headify(node **heap, int size, int i);
+
 void compress () {
 	fr_fd *file = fr_new("/home/slavik/code/anjuta/shi/data/amrd.bin", 4096);
 	metric *met = new_metric_from_file(file);
@@ -116,7 +120,10 @@ void compress () {
 
 	fr_done(file);
 	delete_metric(met);
-	delete_tree(root);
+	// Free the Huffman tree
+	free(root->left);
+	free(root->right);
+	free(root);
 }
 
 void swap(node **a, node **b) {
@@ -150,5 +157,4 @@ int main() {
 	compress();
 	return 0;
 }
-
 
