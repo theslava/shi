@@ -37,124 +37,38 @@
 #include "tree.h"
 #include "huffman.h"
 
-void compress();
+void print_help();
+void compress(const char *input_file, const char *output_file);
 void swap(node **a, node **b);
 void headify(node **heap, int size, int i);
 
-void compress () {
-	fr_fd *file = fr_new("/home/slavik/code/anjuta/shi/data/amrd.bin", 4096);
-	metric *met = new_metric_from_file(file);
-
-	// Build metric
-	fill_metric(met, file);
-
-	// Create heap
-	node *heap[256];
-	int heap_size = 0;
-	for (int i = 0; i < 256; i++) {
-		if (met->characters[i] > 0) {
-			node *n = (node *)malloc(sizeof(node));
-			n->byte = i;
-			n->weight = met->characters[i];
-			n->left = NULL;
-			n->right = NULL;
-			heap[heap_size++] = n;
-		}
-	}
-
-	if (heap_size == 0) {
-	fr_done(file);
-	delete_metric(met);
-		return;
+void print_help() {
+	printf("Usage: shi <action> <input_file> [output_file]\n");
+	printf("\nActions:\n");
+	printf("  compress  Compress the input file using Huffman coding\n");
+	printf("\nExamples:\n");
+	printf("  shi compress data.bin\n");
+	printf("  shi compress data.bin compressed.bin\n");
 }
 
-	// Build heap
-	for (int i = (heap_size / 2) - 1; i >= 0; i--) {
-		headify(heap, heap_size, i);
+int main(int argc, char *argv[]) {
+	if (argc < 3) {
+		print_help();
+		return 1;
 	}
 
-	// Build tree
-	for (int i = 0; i < heap_size - 1; i++) {
-		// Extract min
-		node *min1 = heap[0];
-		headify(heap, heap_size, 0);
-		heap_size--;
-		swap(&heap[0], &heap[heap_size]);
+	const char *action = argv[1];
+	const char *input_file = argv[2];
+	const char *output_file = (argc >= 4) ? argv[3] : NULL;
 
-		node *min2 = heap[0];
-		headify(heap, heap_size, 0);
-		heap_size--;
-		swap(&heap[0], &heap[heap_size]);
-
-		// Create new node
-		node *new_node = new_tree_node(min1, min2);
-		heap[heap_size] = new_node;
-		headify(heap, heap_size, heap_size);
-		heap_size++;
-}
-
-	node *root = heap[0];
-
-	// Make codes
-	char *str = (char *)malloc(256 * sizeof(char));
-	huffman_code **codes = make_huffman_codes(256);
-	make_codes(root, str, 0, codes);
-
-	// Print codes
-	for (int i = 0; i < 256; i++) {
-		if (met->characters[i] > 0) {
-			printf("Char: %d, Code: ", i);
-			for (int j = 0; j < codes[i]->length; j++) {
-				printf("%d", codes[i]->code[j]);
-			}
-			printf("\n");
-		}
+	if (strcmp(action, "compress") == 0) {
+		compress(input_file, output_file);
+	} else {
+		fprintf(stderr, "Unknown action: %s\n", action);
+		print_help();
+		return 1;
 	}
 
-	free(str);
-	for (int i = 0; i < 256; i++) {
-		free(codes[i]->code);
-		free(codes[i]);
-	}
-	free(codes);
-
-	fr_done(file);
-	delete_metric(met);
-	// Free the Huffman tree
-	free(root->left);
-	free(root->right);
-	free(root);
-}
-
-void swap(node **a, node **b) {
-	node *temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-void headify(node **heap, int size, int i) {
-	node *smallest = heap[i];
-	int left = 2 * i + 1;
-	int right = 2 * i + 2;
-
-	if (left < size && compare_nodes(heap[left], smallest) < 0) {
-		smallest = heap[left];
-		i = left;
-	}
-
-	if (right < size && compare_nodes(heap[right], smallest) < 0) {
-		smallest = heap[right];
-		i = right;
-	}
-
-	if (i != 2 * i + 1 && i != 2 * i + 2) {
-		swap(&heap[i], &heap[2 * i + 1]);
-		headify(heap, size, i);
-	}
-}
-
-int main() {
-	compress();
 	return 0;
 }
 
