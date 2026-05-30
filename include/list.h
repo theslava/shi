@@ -1,66 +1,85 @@
-/*
- *      list.h
- *
- *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
- *
- *      This program is free software: you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation, either version 3 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef __list_h__
-#define __list_h__
-
+#ifndef LIST_H
+#define LIST_H
+#include <stdlib.h>
 #include "node.h"
+#include "metric.h"
 
 typedef struct _list {
 	node *head;
 } list;
 
-list * new_list_from_array(node* array) {
-	list * ret = (list*)malloc(sizeof(list));
+list *new_list_from_array(node *array) {
+	list *ret = (list *)malloc(sizeof(list));
 	ret->head = array;
-	array[0].left = NULL;
-	array[0].right = &(array[1]);
-	array[255].left = &(array[254]);
-	array[255].left = NULL;
-	
-	for(int i=1; i < 255; i++) {
-		array[i].left = &(array[i-1]);
-		array[i].right = &(array[i+1]);
+	if (!ret->head) {
+		free(ret);
+		return NULL;
+	}
+	node *current = ret->head;
+
+	// Set left of head to NULL
+	current->left = NULL;
+
+	// Iterate through the array to link nodes
+	for (int i = 0; i < 255; i++) {
+		array[i].right = &(array[i + 1]);
+		array[i + 1].left = &(array[i]);
 	}
 	
+	// Set right of last node to NULL
+	array[255].right = NULL;
+
 	return ret;
 }
 
 //insert in sorted order
-void insert_node(list* l, node* n, metric* m) {
-	node * trav = l->head;
-	
-	while (get_weight(n,m) > get_weight(trav,m)) {
-		trav = trav->right;
+void insert_node(list *l, node *n, metric *m) {
+	if (!l || !n || !m) return;
+	node *trav = l->head;
+	if (!trav) {
+		l->head = n;
+		return;
 	}
 	
-	trav->left = trav->left->right = n;
-	n->left = trav->left;
+	while (get_weight(n) > get_weight(trav)) {
+		if (!trav->right) {
+			// Append to the end
+			trav->right = n;
+			n->left = trav;
+			return;
+		}
+		trav = trav->right;
+	}
+
+	// Insert between trav->left and trav
+	node *prev = trav->left;
 	n->right = trav;
+	n->left = prev;
+
+	if (prev) {
+		prev->right = n;
+	}
+	else {
+		l->head = n;
+	}
+	trav->left = n;
 }
 
-//remove the first element without deleting it
-node* remove_node(list* l) {
-	node * ret = l->head;
+node *pop(list *l) {
+	if (!l || !l->head) return NULL;
+
+	node *ret = l->head;
 	l->head = ret->right;
-	l->head->left = NULL;
+	if (l->head) {
+		l->head->left = NULL;
+	}
+
+	// Clean up node pointers to avoid dangling references
+	ret->left = NULL;
+	ret->right = NULL;
+
 	return ret;
 }
 
-#endif
+#endif /* LIST_H */
+

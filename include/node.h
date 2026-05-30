@@ -17,9 +17,8 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __node_h__
-#define __node_h__
-
+#ifndef NODE_H
+#define NODE_H
 typedef struct _node {
 	int byte;
 		/* if byte <0, then this is a parent node (left/right pointers valid)
@@ -30,15 +29,15 @@ typedef struct _node {
 	struct _node *right;
 } node;
 
-long long unsigned int get_weight(node *n) {
+static inline long long unsigned int get_weight(const node *n) {
 	return n->weight;
 }
 
-int compare_nodes (node *a, node *b) {
-	int result = a->weight - b->weight;
-	if (result < 0) return -1;
-	else if (result > 0) return 1;
+static inline int compare_nodes (const node *a, const node *b) {
+	if (a->weight < b->weight) return -1;
+	else if (a->weight > b->weight) return 1;
 	else return 0;
 }
 
-#endif
+#endif /* NODE_H */
+

@@ -1,60 +1,46 @@
-/*
- *      metric.h
- *
- *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
- *
- *      This program is free software: you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation, either version 3 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+#ifndef METRIC_H
+#define METRIC_H
 
-#ifndef __metric_h__
-#define __metric_h__
-
-#include <malloc.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "file_reader.h"
 
 typedef struct _metric {
 	long long unsigned int characters[256];
 } metric;
 
-metric * new_metric() {
-	int i = 0;
-	metric * met = (metric*)malloc(sizeof(struct _metric));
-	while (i < 256) met->characters[i++] = 0;
+static inline metric * new_metric() {
+	metric * met = (metric *)malloc(sizeof(metric));
+	if (!met) return NULL;
+	for (int i = 0; i < 256; i++) {
+		met->characters[i] = 0;
+	}
 	return met;
 }
 
 metric * new_metric_from_file(fr_fd *file) {
-	int i;
+	if (!file) return NULL;
+
 	metric * met = new_metric();
+	if (!met) return NULL;
+	int i;
 	while ((i = fr_read(file)) != EOF) {
 		met->characters[i]++;
 	}
 	return met;
 }
 
-void fill_metric(metric* met, fr_fd *file) {
+void fill_metric(metric *met, fr_fd *file) {
+	if (!met || !file) return;
 	int i;
 	while ((i = fr_read(file)) != EOF) {
 		met->characters[i]++;
 	}
-	return;
 }
 
-void delete_metric (metric* met) {
-	free(met);
-	return;
+void delete_metric(metric *met) {
+	if (met) free(met);
 }
 
-#endif
+#endif /* METRIC_H */
 
