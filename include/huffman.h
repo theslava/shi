@@ -36,9 +36,18 @@ void make_codes(node *root, char *str, int pos, huffman_code **codes) {
 	if (!root) return;
 
 	if (!root->left && !root->right) {
-		// Leaf node
-		codes[root->byte]->code[root->byte] = root->byte;
-		codes[root->byte]->length = pos;
+		// Leaf node - store the code
+		if (pos > 0) {
+			// Copy the code
+			codes[root->byte]->length = pos;
+			for (int i = 0; i < pos; i++) {
+				codes[root->byte]->code[i] = str[i] - '0';
+			}
+		} else {
+			// Special case for single character
+			codes[root->byte]->length = 1;
+			codes[root->byte]->code[0] = 0;
+		}
 		return;
 	}
 
@@ -50,4 +59,3 @@ void make_codes(node *root, char *str, int pos, huffman_code **codes) {
 }
 
 #endif /* HUFFMAN_H */
-
