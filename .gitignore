@@ -6,3 +6,7 @@ shi
 
 # Object files in root (if any)
 *.o
+
+# MCP shell logs
+mcp-shell.log
+

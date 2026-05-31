@@ -1,28 +1,36 @@
+# Cross-platform Makefile for Windows and Linux with gcc
+
+# Compiler
 CC = gcc
+
+# Compiler flags
 CFLAGS = -Wall -Wextra -std=c99 -I./include
-LDFLAGS =
 
-SRC_DIR = .
-INC_DIR = include
-BUILD_DIR = build
+# Source files
+SRCS = main.c
 
-SOURCES = $(wildcard $(SRC_DIR)/*.c)
-OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
-TARGET = shi
+# Executable name
+EXECUTABLE = shi
 
-all: $(BUILD_DIR) $(TARGET)
+# Default target
+all: build
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+# Build target
+build: $(EXECUTABLE)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
+# Link object files to create executable
+$(EXECUTABLE): $(SRCS)
+	$(CC) $(CFLAGS) -o $@ $<
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
+# Clean target - works on both Unix-like and Windows systems
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+ifeq ($(OS),Windows_NT)
+	@del $(EXECUTABLE).exe 2>nul || echo "Cleaned"
+	@del $(EXECUTABLE) 2>nul || echo "Cleaned"
+else
+	@rm -f $(EXECUTABLE) 2>/dev/null || echo "Cleaned"
+endif
 
-.PHONY: all clean
+# Phony targets
+.PHONY: all build clean
 
