@@ -20,7 +20,6 @@ build: $(EXECUTABLE)
 # Link object files to create executable
 $(EXECUTABLE): $(SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
-
 # Clean target - works on both Unix-like and Windows systems
 clean:
 ifeq ($(OS),Windows_NT)
