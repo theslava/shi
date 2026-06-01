@@ -17,6 +17,10 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <malloc.h>
+#include "file_reader.h"
+#include "metric.h"
+
 #ifndef __node_h__
 #define __node_h__
 
@@ -30,15 +34,8 @@ typedef struct _node {
 	struct _node *right;
 } node;
 
-long long unsigned int get_weight(node *n) {
-	return n->weight;
-}
-
-int compare_nodes (node *a, node *b) {
-	int result = a->weight - b->weight;
-	if (result < 0) return -1;
-	else if (result > 0) return 1;
-	else return 0;
-}
+long long unsigned int get_weight(node *n);
+int compare_nodes (node *a, node *b);
 
 #endif
+

@@ -7,8 +7,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -I./include
 
 # Source files
-SRCS = main.c
-
+SRCS = main.c bitarray.c file_reader.c list.c metric.c node.c sort.c tree.c
 # Executable name
 EXECUTABLE = shi
 
@@ -20,7 +19,7 @@ build: $(EXECUTABLE)
 
 # Link object files to create executable
 $(EXECUTABLE): $(SRCS)
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $^
 
 # Clean target - works on both Unix-like and Windows systems
 clean:
