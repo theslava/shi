@@ -7,8 +7,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -I./include
 
 # Source files
-SRCS = main.c bitarray.c file_reader.c list.c metric.c node.c sort.c tree.c
-# Executable name
+SRCS = main.c bitarray.c file_reader.c list.c metric.c node.c sort.c tree.c compress.c decompress.c
 EXECUTABLE = shi
 
 # Default target
@@ -31,4 +30,3 @@ endif
 
 # Phony targets
 .PHONY: all build clean
-

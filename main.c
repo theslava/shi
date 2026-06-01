@@ -31,37 +31,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "file_reader.h"
-#include "metric.h"
-#include "node.h"
-#include "sort.h"
-#include "tree.h"
-
-// Function prototypes
-void compress_file(const char* input_file, const char* output_file);
-void decompress_file(const char* input_file, const char* output_file);
-
-void compress_file(const char* input_file, const char* output_file) {
-	fr_fd *file = fr_new(input_file, 4096);
-	metric *met = new_metric_from_file(file);
-	tree* root = new_tree_from_metric(met);
-
-	// TODO: Implement actual compression logic
-	// This would typically involve:
-	// - Building a dictionary from the tree
-	// - Compressing the file with the dictionary
-	fr_done(file);
-	delete_metric(met);
-	delete_tree(root);
-}
-
-void decompress_file(const char* input_file, const char* output_file) {
-	// TODO: Implement actual decompression logic
-	// This would typically involve:
-	// - Reading the compressed file
-	// - Reconstructing the tree
-	// - Decompressing using the tree
-}
+#include "compress.h"
+#include "decompress.h"
 
 int main(int argc, char* argv[]) {
     // Check if we have the right number of arguments
@@ -93,4 +64,3 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 }
-
