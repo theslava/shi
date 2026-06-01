@@ -3,30 +3,46 @@
 # Compiler
 CC = gcc
 
-# Compiler flags
-CFLAGS = -Wall -Wextra -std=c99 -I./include
+# Compiler flags - add -Iinclude so headers in include/ are found
+CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
 
 # Source files
-SRCS = main.c bitarray.c file_reader.c list.c metric.c node.c sort.c tree.c compress.c decompress.c
-EXECUTABLE = shi
+SRCS = main.c file_reader.c metric.c node.c sort.c tree.c compress.c decompress.c bitstream.c
+OBJS = $(SRCS:.c=.o)
+
+# Header files
+HEADERS = include/file_reader.h include/metric.h include/node.h include/sort.h \
+          include/tree.h include/compress.h include/decompress.h include/bitstream.h
+
+TARGET = compressor
+TEST_SRCS = test_bitstream.c file_reader.c bitstream.c
+TEST_TARGET = test_bitstream
 
 # Default target
 all: build
 
 # Build target
-build: $(EXECUTABLE)
+build: $(TARGET)
 
 # Link object files to create executable
-$(EXECUTABLE): $(SRCS)
-	$(CC) $(CFLAGS) -o $@ $^
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+
+# Compile object files
+%.o: %.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Test target
+test: $(TEST_TARGET)
+	./$(TEST_TARGET) test.txt
+
+# Compile test executable
+$(TEST_TARGET): $(TEST_SRCS) $(HEADERS)
+	$(CC) $(CFLAGS) -o $(TEST_TARGET) $(TEST_SRCS)
+
 # Clean target - works on both Unix-like and Windows systems
 clean:
-ifeq ($(OS),Windows_NT)
-	@del $(EXECUTABLE).exe 2>nul || echo "Cleaned"
-	@del $(EXECUTABLE) 2>nul || echo "Cleaned"
-else
-	@rm -f $(EXECUTABLE) 2>/dev/null || echo "Cleaned"
-endif
-
+	rm -f $(OBJS) $(TARGET) $(TEST_TARGET)
 # Phony targets
-.PHONY: all build clean
+.PHONY: all build clean test
+
