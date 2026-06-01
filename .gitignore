@@ -3,7 +3,7 @@ build/
 
 # Executable
 shi
-shi.exe
+*.exe
 
 # Object files in root (if any)
 *.o

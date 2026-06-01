@@ -18,6 +18,9 @@ TARGET = compressor
 TEST_SRCS = test_bitstream.c file_reader.c bitstream.c
 TEST_TARGET = test_bitstream
 
+# Platform detection
+RM := $(strip $(shell cmd /c "if "$(OS)"=="Windows_NT" (echo del /Q /F) else (echo rm -f)"))
+RUN := $(strip $(shell cmd /c "if "$(OS)"=="Windows_NT" (echo .\) else (echo ./)"))
 # Default target
 all: build
 
@@ -34,7 +37,7 @@ $(TARGET): $(OBJS)
 
 # Test target
 test: $(TEST_TARGET)
-	./$(TEST_TARGET) test.txt
+	$(RUN)$(TEST_TARGET) test.txt
 
 # Compile test executable
 $(TEST_TARGET): $(TEST_SRCS) $(HEADERS)
@@ -42,7 +45,7 @@ $(TEST_TARGET): $(TEST_SRCS) $(HEADERS)
 
 # Clean target - works on both Unix-like and Windows systems
 clean:
-	rm -f $(OBJS) $(TARGET) $(TEST_TARGET)
+	$(RM) $(OBJS) $(TARGET) $(TEST_TARGET)
 # Phony targets
 .PHONY: all build clean test
 
