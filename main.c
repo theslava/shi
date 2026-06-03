@@ -19,15 +19,6 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* COMPRESSOR FLOW
- * - open file
- * - build metric out of file
- * - build tree out of metric
- * - compress file with the tree
- * In OO terms:
- * compress_file(new_tree(new_metric(new_file("file_path")))));
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
