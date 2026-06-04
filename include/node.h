@@ -34,6 +34,10 @@ typedef struct _node {
 	struct _node *right;
 } node;
 
+/* Node creation / destruction */
+node* new_node(int byte, long long unsigned int weight);
+void delete_node(node *n);
+
 long long unsigned int get_weight(node *n);
 int compare_nodes (node *a, node *b);
 

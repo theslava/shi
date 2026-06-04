@@ -32,6 +32,7 @@
 #endif
 #include <stdio.h>
 
+/* --- Reader struct (existing) --- */
 typedef struct _fr_fd {
 	char* file_path;
 	int file;
@@ -42,10 +43,23 @@ typedef struct _fr_fd {
 	unsigned int inbuf; // actual number of bytes in the buffer
 } fr_fd;
 
+/* --- Writer struct (moved to file_writer.h) --- */
+typedef struct _fr_wd {
+	char* file_path;
+	int file;
+	unsigned char* buffer;
+	unsigned int buffer_size;
+	unsigned int pos;	// current write position within buffer
+} fr_wd;
+
+/* Reader API */
 fr_fd* fr_new(char* file_path, unsigned int bsize);
 int fr_read(fr_fd *fd);
 void fr_rewind(fr_fd *fd);
 void fr_done(fr_fd *fd);
 void fr_info(fr_fd *fd);
+
+/* Writer API (moved to file_writer.h) */
+// Removed from here
 #endif 
 

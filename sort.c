@@ -54,3 +54,9 @@ void heapsort(node **heap) {
 		i--;
 	}
 }
+
+/* Sort an array of node pointers by weight (ascending) */
+void sort_nodes_by_weight(node **nodes, int count) {
+	/* TODO: Implement sorting using heapsort or another method */
+	/* Call heapsort on the first 'count' elements */
+}

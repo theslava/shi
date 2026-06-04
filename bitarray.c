@@ -58,7 +58,7 @@ bitarray *ba_new_from_existing (bitarray *src) {
 
 	created->size = src->size;
 
-	for (i = 0; i < src->size; i++) {
+	for (i = 0; i < size_in_int; i++) {
 		created->data[i] = src->data[i];
 	}
 
@@ -66,11 +66,11 @@ bitarray *ba_new_from_existing (bitarray *src) {
 }
 
 void ba_destroy(bitarray *ba) {
+	if (ba != NULL) {
 	free(ba->data);
 	free(ba);
-	return;
 }
-
+	}
 int ba_get_bit(bitarray *ba, int pos) {
 	if (pos >= ba->size || pos < 0) {
 		return -1;
@@ -100,4 +100,16 @@ int ba_flip_bit(bitarray *ba, int pos) {
 	}
 	(pos > ba->last) ? ba->last = pos : 1 ;
 	return (ba->data[(pos)/32] ^= ba_mask[(pos)%32]);
+}
+
+/* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
+int ba_write_to_file(bitarray *ba, fr_fd *fd) {
+	/* TODO: Implement writing bitarray data to file
+	 *
+	 * Algorithm:
+	 * 1. Calculate number of full bytes needed: (last + 8) / 8
+	 * 2. Iterate through each byte position
+	 * 3. Extract bits from the bitarray and pack them into bytes
+	 * 4. Write each packed byte using fr_write_byte() or similar */
+	return -1;
 }
