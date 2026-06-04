@@ -1,5 +1,5 @@
-#include "tree.h"
-#include "metric.h"
+#include "data_structures/tree.h"
+#include "utils/metric.h"
 
 /* Tree creation / destruction */
 tree* new_tree(void) {

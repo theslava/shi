@@ -5,7 +5,7 @@
 
 #include "utils/metric.h"
 #include "data_structures/tree.h"
-#include "io/file_reader.h"
+#include "io/file_io.h"
 
 /* High-level entry point (existing) */
 void compress_file(const char* input_file, const char* output_file);

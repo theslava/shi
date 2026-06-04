@@ -21,7 +21,7 @@
 #define __metric_h__
 
 #include <malloc.h>
-#include "io/file_reader.h"
+#include "io/file_io.h"
 
 typedef struct _metric {
 	long long unsigned int characters[256];

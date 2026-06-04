@@ -18,7 +18,9 @@
  */
 
 #include <malloc.h>
-#include "io/file_reader.h"
+
+
+#include "io/file_io.h"
 #include "utils/metric.h"
 
 #ifndef __node_h__
@@ -42,4 +44,5 @@ long long unsigned int get_weight(node *n);
 int compare_nodes (node *a, node *b);
 
 #endif
+
 

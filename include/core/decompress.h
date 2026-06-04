@@ -3,7 +3,7 @@
 #ifndef __decompress_h__
 #define __decompress_h__
 
-#include "io/file_reader.h"
+#include "io/file_io.h"
 #include "data_structures/tree.h"
 
 /* High-level entry point (existing) */
