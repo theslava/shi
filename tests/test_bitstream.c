@@ -9,9 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test_helpers.h"
-#include "file_reader.h"
-#include "file_writer.h"
-#include "bitstream.h"
+#include "io/file_io.h"
+#include "data_structures/bitstream.h"
 
 /* Test: Create and destroy a reader */
 static int test_bs_new(void) {
