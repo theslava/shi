@@ -19,9 +19,7 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "core/decompress.h"
-#include "io/file_reader.h"
-#include "io/file_writer.h"
+#include "io/file_io.h"
 #include "utils/metric.h"
 #include "data_structures/node.h"
 #include "data_structures/tree.h"

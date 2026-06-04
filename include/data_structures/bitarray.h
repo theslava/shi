@@ -21,7 +21,7 @@
 #define  __bitarray_h__
 
 #include <malloc.h>
-#include "io/file_reader.h"
+#include "io/file_io.h"
 
 extern unsigned int ba_mask[32];
 typedef struct _array {

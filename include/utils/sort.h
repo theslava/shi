@@ -21,6 +21,7 @@
 #define __sort_h__
 
 #include "data_structures/node.h"
+
 void swap(node **heap, int count);
 void heapify(node **heap, int count, int root);
 void heapsort(node **heap);

@@ -1,4 +1,4 @@
-#include "metric.h"
+#include "utils/metric.h"
 
 metric * new_metric() {
 	int i = 0;

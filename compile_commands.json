@@ -1,101 +1,101 @@
 [
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/main.c -o src/main.o",
     "file": "src/main.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/core/compress.c -o src/core/compress.o",
     "file": "src/core/compress.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/core/decompress.c -o src/core/decompress.o",
     "file": "src/core/decompress.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/data_structures/bitarray.c -o src/data_structures/bitarray.o",
     "file": "src/data_structures/bitarray.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/data_structures/bitstream.c -o src/data_structures/bitstream.o",
     "file": "src/data_structures/bitstream.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/data_structures/list.c -o src/data_structures/list.o",
     "file": "src/data_structures/list.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/data_structures/node.c -o src/data_structures/node.o",
     "file": "src/data_structures/node.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/data_structures/tree.c -o src/data_structures/tree.o",
     "file": "src/data_structures/tree.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/io/file_io.c -o src/io/file_io.o",
     "file": "src/io/file_io.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/utils/metric.c -o src/utils/metric.o",
     "file": "src/utils/metric.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c src/utils/sort.c -o src/utils/sort.o",
     "file": "src/utils/sort.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_bitstream.c -o tests/test_bitstream.o",
     "file": "tests/test_bitstream.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_compress.c -o tests/test_compress.o",
     "file": "tests/test_compress.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_file_reader.c -o tests/test_file_reader.o",
     "file": "tests/test_file_reader.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_file_writer.c -o tests/test_file_writer.o",
     "file": "tests/test_file_writer.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_list.c -o tests/test_list.o",
     "file": "tests/test_list.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_tree.c -o tests/test_tree.o",
     "file": "tests/test_tree.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c tests/test_utils.c -o tests/test_utils.o",
     "file": "tests/test_utils.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c examples/basic_usage.c -o examples/basic_usage.o",
     "file": "examples/basic_usage.c"
   },
   {
-    "directory": "/path/to/project",
+    "directory": "c:/Users/Slava/Code/shi",
     "command": "gcc -Wall -Wextra -std=c99 -g -Iinclude -c examples/advanced_usage.c -o examples/advanced_usage.o",
     "file": "examples/advanced_usage.c"
   }
