@@ -28,18 +28,18 @@ list *new_list_from_array(node** array, int count) {
 	ret->count = count;
 	
 	for(int i = 0; i < count - 1; i++) {
-		array[i].right = array[i + 1];
+		array[i]->right = array[i + 1];
 	}
 	if (count > 1) {
-		array[count - 1].right = NULL;
+		array[count - 1]->right = NULL;
 	}
 	
 	/* Set left pointers for doubly-linked traversal */
 	for(int i = 1; i < count; i++) {
-		array[i].left = array[i - 1];
+		array[i]->left = array[i - 1];
 	}
 	if (count > 0) {
-		array[0].left = NULL;
+		array[0]->left = NULL;
 	}
 	
 	return ret;

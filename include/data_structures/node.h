@@ -19,7 +19,6 @@
 
 #include <malloc.h>
 
-
 #include "io/file_io.h"
 #include "utils/metric.h"
 
