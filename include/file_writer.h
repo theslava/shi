@@ -1,5 +1,5 @@
 /*
- *      list.h
+ *      file_writer.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,28 +17,16 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __list_h__
-#define __list_h__
+#ifndef __file_writer_h__
+#define __file_writer_h__
 
-#include "node.h"
-#include "metric.h"
+#include "file_reader.h"
 
-typedef struct _list {
-	node *head;
-	int count;
-} list;
+/* Writer API (re-exported from file_reader.h for convenience) */
+fr_wd* fw_new(const char* file_path, unsigned int bsize);
+int fw_write_byte(fr_wd *wd, unsigned char byte);
+int fw_write_bytes(fr_wd *wd, const unsigned char *data, unsigned int len);
+void fw_flush(fr_wd *wd);
+void fw_done(fr_wd *wd);
 
-/* List creation / destruction */
-list* new_list(void);
-void delete_list(list *l);
-list *new_list_from_array(node** array, int count);
-void insert_node(list* l, node* n, metric* m);
-node* remove_node(list* l);
-
-/* Iteration helpers */
-int list_size(const list *l);
-node* list_get_head(const list *l);
-list* list_append(list *l, node *n);
-
-#endif
-
+#endif /* __file_writer_h__ */

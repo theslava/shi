@@ -21,6 +21,7 @@
 #define  __bitarray_h__
 
 #include <malloc.h>
+#include "file_reader.h"
 
 extern unsigned int ba_mask[32];
 typedef struct _array {
@@ -36,5 +37,9 @@ int ba_get_bit(bitarray *ba, int pos);
 int ba_set_bit(bitarray *ba, int pos);
 int ba_unset_bit(bitarray *ba, int pos);
 int ba_flip_bit(bitarray *ba, int pos);
+
+/* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
+int ba_write_to_file(bitarray *ba, fr_fd *fd);
+
 #endif
 

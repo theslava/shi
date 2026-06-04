@@ -1,13 +1,17 @@
 /*
  *      bitstream.c
  *
- *      Sequential bit-stream reader implementation.
+ *      Sequential bit-stream reader/writer implementation.
  *      Wraps an existing fr_fd to provide bit-level access to a byte stream.
- *      Reads MSB-first (bit 7, then 6, ..., then 0 of each byte).
+ *      Reads/Writes MSB-first (bit 7, then 6, ..., then 0 of each byte).
  */
 
 #include "bitstream.h"
 #include <stdlib.h>
+
+/* ==========================================================================
+ * READER API
+ * ========================================================================== */
 
 /*
  * Create a new bitstream from an existing file descriptor.
@@ -104,5 +108,95 @@ int bs_eof(bitstream *bs) {
 void bs_done(bitstream *bs) {
     if (bs) {
         free(bs);
+    }
+}
+
+/* ==========================================================================
+ * WRITER API
+ * ========================================================================== */
+
+/*
+ * Create a new bitstream writer from an existing file descriptor.
+ * The writer takes ownership of writing to the fd but does NOT
+ * close it — you must still call fr_done(fd) separately.
+ */
+bitstream_writer* bsw_new(fr_fd *fd) {
+    if (!fd) return NULL;
+
+    bitstream_writer *bsw = (bitstream_writer*) malloc(sizeof(bitstream_writer));
+    if (!bsw) return NULL;
+
+    bsw->fd = fd;
+    bsw->current_byte = 0;
+    bsw->bit_offset = 0;   /* Start at MSB (bit 7) */
+    bsw->bits_written = 0;
+
+    return bsw;
+}
+
+/*
+ * Write a single bit to the stream.
+ * Bits are written MSB-first.
+ */
+void bsw_write_bit(bitstream_writer *bsw, int bit) {
+    if (!bsw || bit < 0 || bit > 1) return;
+
+    /* Set the bit at current position (MSB first) */
+    unsigned char mask = (unsigned char)(1 << (7 - bsw->bit_offset));
+    if (bit) {
+        bsw->current_byte |= mask;
+    } else {
+        bsw->current_byte &= ~mask;
+    }
+
+    bsw->bit_offset++;
+    bsw->bits_written++;
+
+    /* If byte is full, write it out */
+    if (bsw->bit_offset > 7) {
+        fw_write_byte(bsw->fd, bsw->current_byte);
+        bsw->current_byte = 0;
+        bsw->bit_offset = 0;
+    }
+}
+
+/*
+ * Write n bits from the given value to the stream.
+ * Bits are written MSB-first (most significant bit first).
+ *
+ * Example: if value = 0xCA (11001010) and n = 8,
+ *          writes bits in order: 1, 1, 0, 0, 1, 0, 1, 0
+ */
+void bsw_write_bits(bitstream_writer *bsw, unsigned int value, int n) {
+    if (!bsw || n <= 0 || n > 32) return;
+
+    /* Write each bit from MSB to LSB */
+    for (int i = n - 1; i >= 0; i--) {
+        int bit = (value >> i) & 1;
+        bsw_write_bit(bsw, bit);
+    }
+}
+
+/*
+ * Flush any remaining partial byte to the output file.
+ * This should be called before closing the writer to ensure all bits are written.
+ */
+void bsw_flush(bitstream_writer *bsw) {
+    if (!bsw || bsw->bit_offset == 0) return;
+
+    /* Pad with zeros and write the remaining byte */
+    fw_write_byte(bsw->fd, bsw->current_byte);
+    bsw->current_byte = 0;
+    bsw->bit_offset = 0;
+}
+
+/*
+ * Clean up the bitstream writer.
+ * Flushes any remaining data and frees memory. Does NOT close the underlying fr_fd.
+ */
+void bsw_done(bitstream_writer *bsw) {
+    if (bsw) {
+        bsw_flush(bsw);
+        free(bsw);
     }
 }

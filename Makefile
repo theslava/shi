@@ -7,12 +7,13 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
 
 # Source files
-SRCS = main.c file_reader.c metric.c node.c sort.c tree.c compress.c decompress.c bitstream.c
+SRCS = main.c file_reader.c metric.c node.c sort.c tree.c compress.c decompress.c bitstream.c bitarray.c list.c
 OBJS = $(SRCS:.c=.o)
 
 # Header files
 HEADERS = include/file_reader.h include/metric.h include/node.h include/sort.h \
-          include/tree.h include/compress.h include/decompress.h include/bitstream.h
+          include/tree.h include/compress.h include/decompress.h include/bitstream.h \
+          include/bitarray.h include/list.h include/file_writer.h
 
 TARGET = compressor
 TEST_SRCS = test_bitstream.c file_reader.c bitstream.c

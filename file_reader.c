@@ -65,3 +65,8 @@ void fr_info(fr_fd *fd) {
 	fprintf(stderr, "Bytes in buffer = %d\n", fd->inbuf); // actual number of bytes in the buffer
 	fprintf(stderr, "EOF flag = %d\n", fd->eof_flag);
 }
+
+/* ==========================================================================
+ * REMOVED: Writer API has been moved to file_writer.c
+ * ========================================================================== */
+

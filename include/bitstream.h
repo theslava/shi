@@ -11,7 +11,7 @@
 #include "file_reader.h"
 
 /*
- * Bitstream state:
+ * Bitstream state (READER):
  * - fd: the underlying file reader
  * - current_byte: the byte currently being read from (0-255)
  * - bit_offset: which bit we're at within current_byte (0-7, MSB first)
@@ -24,34 +24,32 @@ typedef struct _bitstream {
     int eof;
 } bitstream;
 
-/*
- * Create a new bitstream from an existing file descriptor.
- * Returns NULL on failure.
- */
+/* --- Reader API (existing) --- */
 bitstream* bs_new(fr_fd *fd);
-
-/*
- * Read a single bit (0 or 1) from the stream.
- * Returns -1 on EOF or error.
- */
 int bs_read_bit(bitstream *bs);
-
-/*
- * Read n bits from the stream, returned as an unsigned int.
- * Bits are read MSB-first (most significant bit first).
- * Returns 0 on EOF before any bits read, or partial result if EOF mid-read.
- * If n > 32, behavior is undefined (caller should limit to 32).
- */
 unsigned int bs_read_bits(bitstream *bs, int n);
-
-/*
- * Check if the bitstream has reached EOF.
- */
 int bs_eof(bitstream *bs);
+void bs_done(bitstream *bs);
 
 /*
- * Clean up and free the bitstream. Does NOT close the underlying fr_fd.
+ * Bitstream state (WRITER):
+ * - fd: the underlying file writer
+ * - current_byte: the byte currently being written to
+ * - bit_offset: next bit position to write (0-7, MSB first)
+ * - bits_written: total number of bits written so far
  */
-void bs_done(bitstream *bs);
+typedef struct _bitstream_writer {
+    fr_fd *fd;
+    unsigned char current_byte;
+    int bit_offset;   /* 0 = most significant bit, 7 = least significant bit */
+    int bits_written;
+} bitstream_writer;
+
+/* --- Writer API (new) --- */
+bitstream_writer* bsw_new(fr_fd *fd);
+void bsw_write_bit(bitstream_writer *bsw, int bit);
+void bsw_write_bits(bitstream_writer *bsw, unsigned int value, int n);
+void bsw_flush(bitstream_writer *bsw);
+void bsw_done(bitstream_writer *bsw);
 
 #endif /* __bitstream_h__ */
