@@ -1,5 +1,5 @@
 /*
- *      sort.h
+ *      list.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,17 +17,27 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __sort_h__
-#define __sort_h__
+#ifndef __list_h__
+#define __list_h__
 
-#include "node.h"
+#include "data_structures/node.h"
+#include "utils/metric.h"
+typedef struct _list {
+	node *head;
+	int count;
+} list;
 
-void swap(node **heap, int count);
-void heapify(node **heap, int count, int root);
-void heapsort(node **heap);
+/* List creation / destruction */
+list* new_list(void);
+void delete_list(list *l);
+list *new_list_from_array(node** array, int count);
+void insert_node(list* l, node* n, metric* m);
+node* remove_node(list* l);
 
-/* Sort an array of node pointers by weight (ascending) */
-void sort_nodes_by_weight(node **nodes, int count);
+/* Iteration helpers */
+int list_size(const list *l);
+node* list_get_head(const list *l);
+list* list_append(list *l, node *n);
 
 #endif
 

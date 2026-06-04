@@ -6,7 +6,7 @@
  *      Reads/Writes MSB-first (bit 7, then 6, ..., then 0 of each byte).
  */
 
-#include "bitstream.h"
+#include "data_structures/bitstream.h"
 #include <stdlib.h>
 
 /* ==========================================================================

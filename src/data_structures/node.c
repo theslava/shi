@@ -1,6 +1,5 @@
-#include "node.h"
-#include "metric.h"
-
+#include "data_structures/node.h"
+#include "utils/metric.h"
 /* Node creation / destruction */
 node* new_node(int byte, long long unsigned int weight) {
 	/* TODO: Allocate and initialize a node */

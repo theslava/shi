@@ -3,8 +3,8 @@
 #ifndef __decompress_h__
 #define __decompress_h__
 
-#include "file_reader.h"
-#include "tree.h"
+#include "io/file_reader.h"
+#include "data_structures/tree.h"
 
 /* High-level entry point (existing) */
 void decompress_file(const char* input_file, const char* output_file);

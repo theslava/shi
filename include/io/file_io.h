@@ -1,5 +1,5 @@
 /*
- *      file_reader.h
+ *      file_io.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,8 +17,8 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#ifndef __file_reader_h__
-#define __file_reader_h__
+#ifndef __file_io_h__
+#define __file_io_h__
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,7 +32,7 @@
 #endif
 #include <stdio.h>
 
-/* --- Reader struct (existing) --- */
+/* --- Reader struct --- */
 typedef struct _fr_fd {
 	char* file_path;
 	int file;
@@ -43,7 +43,7 @@ typedef struct _fr_fd {
 	unsigned int inbuf; // actual number of bytes in the buffer
 } fr_fd;
 
-/* --- Writer struct (moved to file_writer.h) --- */
+/* --- Writer struct --- */
 typedef struct _fr_wd {
 	char* file_path;
 	int file;
@@ -59,7 +59,11 @@ void fr_rewind(fr_fd *fd);
 void fr_done(fr_fd *fd);
 void fr_info(fr_fd *fd);
 
-/* Writer API (moved to file_writer.h) */
-// Removed from here
-#endif 
+/* Writer API */
+fr_wd* fw_new(const char* file_path, unsigned int bsize);
+int fw_write_byte(fr_wd *wd, unsigned char byte);
+int fw_write_bytes(fr_wd *wd, const unsigned char *data, unsigned int len);
+void fw_flush(fr_wd *wd);
+void fw_done(fr_wd *wd);
 
+#endif

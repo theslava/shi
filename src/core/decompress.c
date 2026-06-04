@@ -19,14 +19,16 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "file_reader.h"
-#include "file_writer.h"
-#include "metric.h"
-#include "node.h"
-#include "tree.h"
-#include "bitstream.h"
-#include "compress.h"
-#include "decompress.h"
+#include "io/file_reader.h"
+#include "io/file_writer.h"
+#include "utils/metric.h"
+#include "data_structures/node.h"
+#include "data_structures/tree.h"
+#include "data_structures/bitstream.h"
+#include "core/compress.h"
+#include "data_structures/bitarray.h"
+#include "data_structures/bitstream.h"
+#include "core/decompress.h"
 
 void decompress_file(const char* input_file, const char* output_file) {
 	/* 1. Open the compressed input file for reading */
@@ -104,3 +106,4 @@ node* reconstruct_tree_from_codes(const unsigned int codes[256],
 	/* Build a canonical Huffman tree from the code lengths */
 	return NULL;
 }
+
