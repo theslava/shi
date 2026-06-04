@@ -1,5 +1,5 @@
 /*
- *      list.h
+ *      tree.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,29 +17,31 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __bitarray_h__
-#define  __bitarray_h__
+#ifndef __tree_h__
+#define __tree_h__
 
 #include <malloc.h>
-#include "file_reader.h"
+#include "data_structures/node.h"
+#include "utils/sort.h"
+#include "utils/metric.h"
+typedef struct _tree {
+	node * root;
+	node nodes[512]; /* array of nodes */
+} tree;
 
-extern unsigned int ba_mask[32];
-typedef struct _array {
-	unsigned int size;
-	unsigned int last;
-	unsigned int *data;
-} bitarray;
+/* Tree creation / destruction */
+tree* new_tree(void);
+void delete_tree(tree *del);
 
-bitarray *ba_new (int size);
-bitarray *ba_new_from_existing (bitarray *src);
-void ba_destroy(bitarray *ba);
-int ba_get_bit(bitarray *ba, int pos);
-int ba_set_bit(bitarray *ba, int pos);
-int ba_unset_bit(bitarray *ba, int pos);
-int ba_flip_bit(bitarray *ba, int pos);
+tree *new_tree_from_metric(metric *met);
 
-/* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
-int ba_write_to_file(bitarray *ba, fr_fd *fd);
+/* Generate Huffman codes from the tree.
+ * Fills `codes` (array of 256 unsigned ints) and `code_lengths` (array of 256 ints).
+ * Returns number of distinct symbols in the tree. */
+int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]);
+
+/* Free dynamically allocated nodes in the tree (not the static array) */
+void free_tree_nodes(node *root);
 
 #endif
 

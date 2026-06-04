@@ -19,15 +19,14 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "file_reader.h"
-#include "file_writer.h"
-#include "metric.h"
-#include "node.h"
-#include "sort.h"
-#include "list.h"
-#include "tree.h"
-#include "bitstream.h"
-#include "compress.h"
+#include "core/decompress.h"
+#include "io/file_reader.h"
+#include "io/file_writer.h"
+#include "utils/metric.h"
+#include "data_structures/node.h"
+#include "data_structures/tree.h"
+#include "data_structures/bitstream.h"
+#include "core/compress.h"
 
 void compress_file(const char* input_file, const char* output_file) {
 	/* 1. Open the input file for reading */
@@ -128,3 +127,4 @@ int compress_data(fr_fd *input_fd, fr_wd *output_fd,
 	/* Flush remaining bits at the end */
 	return 0;
 }
+

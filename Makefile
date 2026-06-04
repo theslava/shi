@@ -6,22 +6,31 @@ CC = gcc
 # Compiler flags - add -Iinclude so headers in include/ are found
 CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
 
-# Source files
-SRCS = main.c file_reader.c metric.c node.c sort.c tree.c compress.c decompress.c bitstream.c bitarray.c list.c
+# Source files (organized by feature)
+SRCS = src/main.c \
+       src/core/compress.c src/core/decompress.c \
+       src/data_structures/bitarray.c src/data_structures/bitstream.c \
+       src/data_structures/list.c src/data_structures/node.c \
+       src/data_structures/tree.c \
+       src/io/file_reader.c src/io/file_writer.c \
+       src/utils/metric.c src/utils/sort.c
 OBJS = $(SRCS:.c=.o)
 
-# Header files
-HEADERS = include/file_reader.h include/metric.h include/node.h include/sort.h \
-          include/tree.h include/compress.h include/decompress.h include/bitstream.h \
-          include/bitarray.h include/list.h include/file_writer.h
-
-TARGET = compressor
-TEST_SRCS = test_bitstream.c file_reader.c bitstream.c
+# Header files (organized by feature)
+HEADERS = include/core/compress.h include/core/decompress.h \
+          include/data_structures/bitarray.h include/data_structures/bitstream.h \
+          include/data_structures/list.h include/data_structures/node.h \
+          include/data_structures/tree.h \
+          include/io/file_reader.h include/io/file_writer.h \
+          include/utils/metric.h include/utils/sort.h
+TARGET = shi
+TEST_SRCS = tests/test_bitstream.c src/io/file_reader.c src/data_structures/bitstream.c
 TEST_TARGET = test_bitstream
 
 # Platform detection
 RM := $(strip $(shell cmd /c "if "$(OS)"=="Windows_NT" (echo del /Q /F) else (echo rm -f)"))
 RUN := $(strip $(shell cmd /c "if "$(OS)"=="Windows_NT" (echo .\) else (echo ./)"))
+
 # Default target
 all: build
 
@@ -47,6 +56,7 @@ $(TEST_TARGET): $(TEST_SRCS) $(HEADERS)
 # Clean target - works on both Unix-like and Windows systems
 clean:
 	$(RM) $(OBJS) $(TARGET) $(TEST_TARGET)
+
 # Phony targets
 .PHONY: all build clean test
 

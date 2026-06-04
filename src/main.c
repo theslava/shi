@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "compress.h"
-#include "decompress.h"
+#include "core/compress.h"
+#include "core/decompress.h"
 
 int main(int argc, char* argv[]) {
     // Check if we have the right number of arguments
@@ -55,4 +55,5 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 }
+
 

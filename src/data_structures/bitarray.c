@@ -1,4 +1,5 @@
-#include "bitarray.h"
+#include "data_structures/bitarray.h"
+#include "data_structures/bitstream.h"
 
 unsigned int ba_mask[32] = {
 	0x00000001, 0x00000002, 0x00000004, 0x00000008,
@@ -113,3 +114,4 @@ int ba_write_to_file(bitarray *ba, fr_fd *fd) {
 	 * 4. Write each packed byte using fr_write_byte() or similar */
 	return -1;
 }
+

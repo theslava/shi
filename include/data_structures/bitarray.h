@@ -17,28 +17,29 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __list_h__
-#define __list_h__
+#ifndef __bitarray_h__
+#define  __bitarray_h__
 
-#include "node.h"
-#include "metric.h"
+#include <malloc.h>
+#include "io/file_reader.h"
 
-typedef struct _list {
-	node *head;
-	int count;
-} list;
+extern unsigned int ba_mask[32];
+typedef struct _array {
+	unsigned int size;
+	unsigned int last;
+	unsigned int *data;
+} bitarray;
 
-/* List creation / destruction */
-list* new_list(void);
-void delete_list(list *l);
-list *new_list_from_array(node** array, int count);
-void insert_node(list* l, node* n, metric* m);
-node* remove_node(list* l);
+bitarray *ba_new (int size);
+bitarray *ba_new_from_existing (bitarray *src);
+void ba_destroy(bitarray *ba);
+int ba_get_bit(bitarray *ba, int pos);
+int ba_set_bit(bitarray *ba, int pos);
+int ba_unset_bit(bitarray *ba, int pos);
+int ba_flip_bit(bitarray *ba, int pos);
 
-/* Iteration helpers */
-int list_size(const list *l);
-node* list_get_head(const list *l);
-list* list_append(list *l, node *n);
+/* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
+int ba_write_to_file(bitarray *ba, fr_fd *fd);
 
 #endif
 

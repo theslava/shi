@@ -8,7 +8,7 @@
 #ifndef __bitstream_h__
 #define __bitstream_h__
 
-#include "file_reader.h"
+#include "io/file_reader.h"
 
 /*
  * Bitstream state (READER):

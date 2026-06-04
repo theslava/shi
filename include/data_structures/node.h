@@ -18,8 +18,8 @@
  */
 
 #include <malloc.h>
-#include "file_reader.h"
-#include "metric.h"
+#include "io/file_reader.h"
+#include "utils/metric.h"
 
 #ifndef __node_h__
 #define __node_h__
