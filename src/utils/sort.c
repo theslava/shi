@@ -46,10 +46,10 @@ void heapify(node **heap, int count, int root) {
 	}
 }
 
-void heapsort(node **heap) {
-	int i = 256;
+void heapsort(node **heap, int count) {
+	int i = count;
 	while (i > 0) {
-		heapify (heap, i, 0);
+		heapify(heap, i, 0);
 		swap(heap, i);
 		i--;
 	}
@@ -69,5 +69,3 @@ void sort_nodes_by_weight(node **nodes, int count) {
 		nodes[j + 1] = key;
 	}
 }
-
-

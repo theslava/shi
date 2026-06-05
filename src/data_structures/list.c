@@ -13,8 +13,15 @@ list* new_list(void) {
 }
 
 void delete_list(list *l) {
-	/* TODO: Free all nodes in the list */
+	/* Free all nodes in the list */
 	if (l != NULL) {
+		node *current = l->head;
+		while (current != NULL) {
+			node *next = current->right;
+			current->left = NULL;
+			current->right = NULL;
+			current = next;
+		}
 		free(l);
 	}
 }
@@ -69,10 +76,12 @@ void insert_node(list* l, node* n, metric* m) {
 	/* Insert n between trav->left and trav */
 	n->right = trav;
 	n->left = trav->left;
-	if (trav->left != NULL) {
+	if (trav && trav->left != NULL) {
 		trav->left->right = n;
 	}
+	if (trav) {
 	trav->left = n;
+}
 	l->count++;
 }
 
@@ -80,7 +89,7 @@ void insert_node(list* l, node* n, metric* m) {
 node* remove_node(list *l) {
 	node *ret = l->head;
 	if (ret == NULL) return NULL;
-	
+
 	l->head = ret->right;
 	if (l->head != NULL) {
 		l->head->left = NULL;
@@ -105,7 +114,7 @@ node* list_get_head(const list *l) {
 list* list_append(list *l, node *n) {
 	/* TODO: Append a node to the end of the list */
 	if (l == NULL || n == NULL) return l;
-	
+
 	if (l->head == NULL) {
 		l->head = n;
 		n->left = NULL;

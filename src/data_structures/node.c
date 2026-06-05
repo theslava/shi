@@ -3,16 +3,20 @@
 
 /* Node creation / destruction */
 node* new_node(int byte, long long unsigned int weight) {
-    (void)byte; (void)weight;
-	/* TODO: Allocate and initialize a node */
-	return NULL;
+    node* n = (node*)malloc(sizeof(node));
+	if (n != NULL) {
+        n->byte = byte;
+        n->weight = weight;
+        n->left = NULL;
+        n->right = NULL;
+	}
+    return n;
 }
 
 void delete_node(node *n) {
-	/* TODO: Free a single node (does not free children) */
 	if (n != NULL) {
 		free(n);
-	}
+}
 }
 
 long long unsigned int get_weight(node *n) {

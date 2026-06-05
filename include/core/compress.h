@@ -3,12 +3,13 @@
 #ifndef __compress_h__
 #define __compress_h__
 
+#include "io/file_io.h"
 #include "utils/metric.h"
 #include "data_structures/tree.h"
-#include "io/file_io.h"
+#include "data_structures/node.h"
 
 /* High-level entry point (existing) */
-void compress_file(const char* input_file, const char* output_file);
+int compress_file(const char* input_file, const char* output_file);
 
 /* --- Internal helpers (new stubs) --- */
 
@@ -29,5 +30,15 @@ int compress_data(fr_fd *input_fd, fr_wd *output_fd,
 /* Decompress data from input bitstream using the Huffman tree and write to output file.
  * Returns 0 on success, -1 on error. */
 int decompress_data(fr_fd *input_fd, fr_wd *output_fd, node *tree_root);
+
+/* ==========================================================================
+ * Tree reconstruction
+ * ========================================================================== */
+
+/* Reconstruct a Huffman tree from codes and code_lengths read from the header.
+ * Returns pointer to root node, or NULL on error. */
+node* reconstruct_tree_from_codes(const unsigned int codes[256],
+                                   const int code_lengths[256],
+                                   int num_symbols);
 
 #endif

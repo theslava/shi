@@ -4,10 +4,10 @@
 #define __decompress_h__
 
 #include "io/file_io.h"
-#include "data_structures/tree.h"
+#include "data_structures/node.h"
 
 /* High-level entry point (existing) */
-void decompress_file(const char* input_file, const char* output_file);
+int decompress_file(const char* input_file, const char* output_file);
 
 /* --- Internal helpers (new stubs) --- */
 

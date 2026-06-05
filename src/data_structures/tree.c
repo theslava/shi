@@ -11,10 +11,6 @@ tree* new_tree(void) {
 }
 
 void delete_tree(tree *del) {
-	/* Free dynamically allocated nodes first */
-	if (del != NULL && del->root != NULL) {
-		free_tree_nodes(del->root);
-	}
 	free(del);
 }
 
@@ -25,9 +21,11 @@ tree *new_tree_from_metric(metric * met) {
 	int i;
 
 	tree * ret = new_tree();
+	if (!ret) return NULL;
+
 	node * node_index[256];
 
-	//initialize the array
+	/* Initialize the array with leaf nodes for each byte value */
 	for (i = 0; i < 256; i++) {
 		ret->nodes[i].left = NULL;
 		ret->nodes[i].right = NULL;
@@ -36,24 +34,30 @@ tree *new_tree_from_metric(metric * met) {
 		node_index[i] = &(ret->nodes[i]);
 	}
 
-	//sort the array by weight (ascending)
+	/* Sort the array by weight (ascending) */
 	sort_nodes_by_weight(node_index, 256);
 
-	//while there are more than 1 nodes
-	while (first_node != last_node) {
-		//combine the two first nodes under a parent node
+	/* While there are more than 1 nodes, combine the two smallest */
+	while (last_node > first_node) {
+		/* Create a parent node */
 		ret->nodes[next_pnode].left = node_index[first_node];
 		ret->nodes[next_pnode].right = node_index[first_node+1];
-		ret->nodes[next_pnode].weight = get_weight(node_index[first_node]) + get_weight(node_index[first_node+1]);
+		ret->nodes[next_pnode].weight = node_index[first_node]->weight + node_index[first_node+1]->weight;
 		ret->nodes[next_pnode].byte = -1;
-		//move up the beginning of the 'list'
 		first_node++;
 
-		//move the nodes up so that the parent can be put into proper place
-		for(i = first_node+1; ((i <= last_node) && (get_weight(node_index[i]) < ret->nodes[next_pnode].weight)); i++) {
-			node_index[i-1] = node_index[i];
+		/* Insert the parent node into the sorted position */
+		int insert_pos = first_node;
+		while (insert_pos < last_node && get_weight(node_index[insert_pos]) < ret->nodes[next_pnode].weight) {
+			insert_pos++;
 		}
-		node_index[i] = &(ret->nodes[next_pnode++]);
+		/* Shift nodes to make room */
+		int j = next_pnode;
+		for (i = next_pnode - 1; i >= insert_pos; i--) {
+			node_index[j] = node_index[i];
+			j--;
+		}
+		node_index[insert_pos] = &(ret->nodes[next_pnode++]);
 	}
 
 	ret->root = node_index[first_node];
@@ -67,17 +71,50 @@ void free_tree_nodes(node *root) {
 	free_tree_nodes(root->right);
 	/* All nodes are stored in the tree's static array, so nothing to free here. */
 }
+
+/* Helper: recursive DFS to generate Huffman codes */
+static void generate_codes_recursive(node *n, unsigned int current_code, int current_length,
+                                     unsigned int codes[256], int code_lengths[256]) {
+	if (n == NULL) return;
+
+	/* Leaf node: store the code */
+	if (n->byte >= 0) {
+		codes[n->byte] = current_code;
+		code_lengths[n->byte] = current_length;
+		return;
+	}
+
+	/* Traverse left: append 0 */
+	generate_codes_recursive(n->left, (current_code << 1) | 0, current_length + 1, codes, code_lengths);
+	/* Traverse right: append 1 */
+	generate_codes_recursive(n->right, (current_code << 1) | 1, current_length + 1, codes, code_lengths);
+}
+
 int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]) {
-	(void)t; (void)codes; (void)code_lengths;
-	/* TODO: Traverse the Huffman tree to assign codes
-	 *
-	 * Algorithm:
-	 * 1. Start at root with empty code and length 0
-	 * 2. For each left edge, append a '0' bit
-	 * 3. For each right edge, append a '1' bit
-	 * 4. At leaf nodes (byte >= 0), store the accumulated code and length
-	 *
-	 * Returns the count of symbols with non-zero frequency */
-	return 0;
+	if (!t || !t->root) return 0;
+
+	/* Initialize arrays */
+	for (int i = 0; i < 256; i++) {
+		codes[i] = 0;
+		code_lengths[i] = 0;
+	}
+
+	/* Handle single-symbol tree (root is a leaf) */
+	if (t->root->byte >= 0) {
+		codes[t->root->byte] = 0;
+		code_lengths[t->root->byte] = 1;
+		return 1;
+	}
+	/* Traverse the tree and assign codes */
+	generate_codes_recursive(t->root, 0, 0, codes, code_lengths);
+
+	/* Count symbols with non-zero frequency */
+	int num_symbols = 0;
+	for (int i = 0; i < 256; i++) {
+		if (code_lengths[i] > 0) {
+			num_symbols++;
+		}
+	}
+	return num_symbols;
 }
 
