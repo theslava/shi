@@ -11,3 +11,4 @@ shi
 # MCP shell logs
 mcp-shell.log
 
+compile_commands.json
