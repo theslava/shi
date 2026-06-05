@@ -8,7 +8,7 @@ all: build
 
 # Build target
 build:
-	cmake -B build -S .
+	cmake -B build -S . -G "MinGW Makefiles"
 	cmake --build build
 
 # Clean target
