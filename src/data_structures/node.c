@@ -1,7 +1,9 @@
 #include "data_structures/node.h"
 #include "utils/metric.h"
+
 /* Node creation / destruction */
 node* new_node(int byte, long long unsigned int weight) {
+    (void)byte; (void)weight;
 	/* TODO: Allocate and initialize a node */
 	return NULL;
 }
@@ -18,8 +20,7 @@ long long unsigned int get_weight(node *n) {
 }
 
 int compare_nodes (node *a, node *b) {
-	int result = a->weight - b->weight;
-	if (result < 0) return -1;
-	else if (result > 0) return 1;
+	if (a->weight < b->weight) return -1;
+	else if (a->weight > b->weight) return 1;
 	else return 0;
 }

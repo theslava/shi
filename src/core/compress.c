@@ -107,22 +107,15 @@ void compress_file(const char* input_file, const char* output_file) {
 
 int write_header(fr_wd *output_fd, const unsigned int codes[256],
                  const int code_lengths[256], int num_symbols) {
+	(void)output_fd; (void)codes; (void)code_lengths; (void)num_symbols;
 	/* TODO: Implement header writing */
-	/* Write num_symbols as 4-byte integer (little-endian) */
-	/* For each symbol with non-zero code length, write:
-	 *   - byte value (1 byte)
-	 *   - code length (1 byte)
-	 */
 	return 0;
 }
 
 int compress_data(fr_fd *input_fd, fr_wd *output_fd,
                   const unsigned int codes[256], const int code_lengths[256]) {
+	(void)input_fd; (void)output_fd; (void)codes; (void)code_lengths;
 	/* TODO: Implement data compression */
-	/* Create a bitstream writer from output_fd */
-	/* Read each byte from input_fd using fr_read() */
-	/* Write the Huffman code for each byte via bsw_write_bits() */
-	/* Flush remaining bits at the end */
 	return 0;
 }
 

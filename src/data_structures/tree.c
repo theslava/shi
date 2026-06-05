@@ -65,16 +65,10 @@ void free_tree_nodes(node *root) {
 	if (root == NULL) return;
 	free_tree_nodes(root->left);
 	free_tree_nodes(root->right);
-	/* Only free non-leaf nodes that were dynamically allocated */
-	if (root->byte < 0 && root != &root->left /* sentinel check */) {
-		/* TODO: Track which nodes are heap-allocated vs static array */
-	}
+	/* All nodes are stored in the tree's static array, so nothing to free here. */
 }
-
-/* Generate Huffman codes from the tree.
- * Fills `codes` and `code_lengths` arrays indexed by byte value (0-255).
- * Returns number of distinct symbols in the tree. */
 int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]) {
+	(void)t; (void)codes; (void)code_lengths;
 	/* TODO: Traverse the Huffman tree to assign codes
 	 *
 	 * Algorithm:
@@ -86,3 +80,4 @@ int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]) {
 	 * Returns the count of symbols with non-zero frequency */
 	return 0;
 }
+

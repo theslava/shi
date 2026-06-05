@@ -47,6 +47,7 @@ list *new_list_from_array(node** array, int count) {
 
 //insert in sorted order
 void insert_node(list* l, node* n, metric* m) {
+	(void)m;
 	node * trav = l->head;
 	
 	/* If list is empty or new node has less weight than head */
@@ -121,3 +122,4 @@ list* list_append(list *l, node *n) {
 	l->count++;
 	return l;
 }
+
