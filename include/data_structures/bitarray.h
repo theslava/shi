@@ -30,13 +30,13 @@ typedef struct _array {
 	unsigned int *data;
 } bitarray;
 
-bitarray *ba_new (int size);
-bitarray *ba_new_from_existing (bitarray *src);
+bitarray *ba_new(unsigned int size);
+bitarray *ba_new_from_existing(bitarray *src);
 void ba_destroy(bitarray *ba);
-int ba_get_bit(bitarray *ba, int pos);
-int ba_set_bit(bitarray *ba, int pos);
-int ba_unset_bit(bitarray *ba, int pos);
-int ba_flip_bit(bitarray *ba, int pos);
+int ba_get_bit(bitarray *ba, unsigned int pos);
+int ba_set_bit(bitarray *ba, unsigned int pos);
+int ba_unset_bit(bitarray *ba, unsigned int pos);
+int ba_flip_bit(bitarray *ba, unsigned int pos);
 
 /* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
 int ba_write_to_file(bitarray *ba, fr_fd *fd);
