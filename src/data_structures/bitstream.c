@@ -120,7 +120,7 @@ void bs_done(bitstream *bs) {
  * The writer takes ownership of writing to the fd but does NOT
  * close it — you must still call fr_done(fd) separately.
  */
-bitstream_writer* bsw_new(fr_fd *fd) {
+bitstream_writer* bsw_new(fr_wd *fd) {
     if (!fd) return NULL;
 
     bitstream_writer *bsw = (bitstream_writer*) malloc(sizeof(bitstream_writer));
