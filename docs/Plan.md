@@ -6,7 +6,7 @@ The goal is to implement a complete **Huffman compression/decompression** tool i
 
 | Module | Responsibility |
 |--------|---------------|
-| `file_reader.c / file_writer.h` | Low-level buffered I/O (read + write) |
+| `file_io.c / file_io.h` | Low-level buffered I/O (read + write) |
 | `metric.c` | Count byte frequencies from input data |
 | `node.c` | Huffman tree node struct & helpers |
 | `sort.c` | Heap-based sorting of nodes by weight |
@@ -18,7 +18,7 @@ The goal is to implement a complete **Huffman compression/decompression** tool i
 
 **Data flow — Compression:**
 ```
-Input file → fr_read() → metric (frequency counts)
+Input file → fr_new() → metric (frequency counts)
            → sort nodes → build Huffman tree → generate_codes()
            → write_header() + compress_data() via bitstream writer → Output file
 ```
@@ -35,36 +35,49 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 
 ### Headers (`include/`)
 
-| File | Changes |
-|------|---------|
-| `file_reader.h` | Added `fr_wd` struct + writer API: `fw_new`, `fw_write_byte`, `fw_write_bytes`, `fw_flush`, `fw_done` |
-| `file_writer.h` | **New file** — re-exports the writer API for convenience |
-| `node.h` | Added `new_node()`, `delete_node()` stubs |
-| `sort.h` | Added `sort_nodes_by_weight(node**, int)` stub |
-| `list.h` | Added `count` field, `new_list()`, `delete_list()`, `list_size()`, `list_get_head()`, `list_append()` |
-| `tree.h` | Added `new_tree()`, `generate_codes(tree*, unsigned int[256], int[256])`, `free_tree_nodes(node*)` stubs |
-| `bitarray.h` | Added `ba_write_to_file(bitarray*, fr_fd*)` stub; included `file_reader.h` |
-| `bitstream.h` | Added full writer API: `bitstream_writer` struct, `bsw_new`, `bsw_write_bit`, `bsw_write_bits`, `bsw_flush`, `bsw_done` |
-| `compress.h` | Added internal helpers: `write_header()`, `read_header()`, `compress_data()`, `decompress_data()` |
-| `decompress.h` | Added `reconstruct_tree_from_codes(const unsigned int[256], const int[256], int)` stub |
+| File | Status |
+|------|--------|
+| `file_io.h` | ✓ Complete — reader (`fr_fd`) and writer (`fr_wd`) structs + full API |
+| `node.h` | ✓ Complete — node struct, `new_node()`, `delete_node()` declared |
+| `sort.h` | ✓ Complete — heapsort helpers + `sort_nodes_by_weight()` declared |
+| `list.h` | ✓ Complete — doubly-linked list with `count`, insertion, removal |
+| `tree.h` | ✓ Complete — tree struct with static node array, `new_tree()`, `generate_codes()`, `free_tree_nodes()` |
+| `bitstream.h` | ✓ Complete — full reader + writer API (MSB-first bit packing) |
+| `bitarray.h` | ✓ Complete — bit array operations + `ba_write_to_file()` |
+| `metric.h` | ✓ Complete — frequency counter struct + helpers |
+| `compress.h` | ✓ Complete — `compress_file()` + internal helpers (`write_header()`, `compress_data()`) |
+| `decompress.h` | ✓ Complete — `decompress_file()` + `reconstruct_tree_from_codes()` |
 
-### Implementation Files (`*.c`)
+### Implementation Files (`src/`)
 
-| File | Changes |
-|------|---------|
-| `file_reader.c` | Full writer implementation: buffered writes, flush on full buffer, direct write for large data |
-| `bitstream.c` | Full writer implementation: MSB-first bit packing, auto-flush when byte is full |
-| `node.c` | Added `new_node()` and `delete_node()` stubs |
-| `sort.c` | Added `sort_nodes_by_weight()` stub (calls heapsort internally) |
-| `list.c` | Full doubly-linked sorted list with size tracking, safe insertion/removal |
-| `tree.c` | Added `new_tree()`, `generate_codes()` stub, `free_tree_nodes()` stub; fixed tree building to use `sort_nodes_by_weight` |
-| `bitarray.c` | Fixed null checks in `ba_destroy()`, added `ba_write_to_file()` stub |
-| `compress.c` | **Full call chain** with error handling: open input → metric → tree → codes → write header → compress data → flush/close → cleanup |
-| `decompress.c` | **Full call chain** with error handling: open input → read header → reconstruct tree → decompress data → flush/close → cleanup |
+| File | Status |
+|------|--------|
+| `file_io.c` | ✓ **Complete** — buffered reader/writer with `fr_new()`, `fr_read()`, `fw_new()`, `fw_write_byte()`, `fw_write_bytes()`, `fw_flush()`, `fw_done()` |
+| `bitstream.c` | ✓ **Complete** — full reader + writer (MSB-first bit packing, auto-flush) |
+| `metric.c` | ✓ **Complete** — frequency counting from file |
+| `node.c` | ⚠️ **Stub** — `new_node()` returns NULL, `delete_node()` frees but doesn't recurse |
+| `sort.c` | ⚠️ **Stub** — `sort_nodes_by_weight()` does nothing, `heapsort()` hardcoded to 256 |
+| `list.c` | ⚠️ **Partial** — doubly-linked list works, but `delete_list()` doesn't free nodes, `insert_node()` logic has issues |
+| `tree.c` | ⚠️ **Partial** — `new_tree()` works, `delete_tree()` works, `new_tree_from_metric()` has bugs (uses static array but doesn't properly manage parent nodes), `generate_codes()` returns 0, `free_tree_nodes()` has broken sentinel |
+| `compress.c` | ⚠️ **Partial** — `compress_file()` full call chain, but `write_header()` and `compress_data()` return 0 (no-op) |
+| `decompress.c` | ⚠️ **Partial** — `decompress_file()` full call chain, but `read_header()` returns -1, `decompress_data()` returns 0 (no-op), `reconstruct_tree_from_codes()` returns NULL |
 
 ### Build System
 
-- **Makefile**: Added `bitarray.c`, `list.c` to SRCS; added new headers to HEADERS.
+- **CMakeLists.txt**: Primary build system (CMake-based)
+- **Makefile**: Wrapper that invokes CMake
+
+### Test Files
+
+| File | Status |
+|------|--------|
+| `tests/test_compress.c` | ⚠️ Calls `compress_file()` and `decompress_file()` but expects them to return `int` (they currently return `void`) |
+| `tests/test_helpers.h` | ✓ Complete — temp file creation, file comparison, test macros |
+| `tests/test_bitstream.c` | Exists (unseen in scan) |
+| `tests/test_file_reader.c` | Exists (unseen in scan) |
+| `tests/test_file_writer.c` | Exists (unseen in scan) |
+| `tests/test_list.c` | Exists (unseen in scan) |
+| `tests/test_tree.c` | Exists (unseen in scan) |
 
 ---
 
@@ -72,28 +85,39 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 
 ### Phase 1 — Core Data Functions (highest priority)
 
-| Function | File | Description |
-|----------|------|-------------|
-| `new_node()` | `node.c` | Allocate & initialize a node with given byte value and weight |
-| `sort_nodes_by_weight()` | `sort.c` | Call heapsort on the first `count` elements of the array |
-| `generate_codes()` | `tree.c` | Traverse Huffman tree (DFS), assign 0/1 codes to leaves, fill `codes[]` and `code_lengths[]`, return symbol count |
+| Function | File | Status | Description |
+|----------|------|--------|-------------|
+| `new_node()` | `src/data_structures/node.c` | ⚠️ Stub | Allocate & initialize a node with given byte value and weight |
+| `sort_nodes_by_weight()` | `src/utils/sort.c` | ⚠️ Stub | Call heapsort on the first `count` elements of the array (currently a no-op) |
+| `generate_codes()` | `src/data_structures/tree.c` | ⚠️ Stub | Traverse Huffman tree (DFS), assign 0/1 codes to leaves, fill `codes[]` and `code_lengths[]`, return symbol count |
+| `free_tree_nodes()` | `src/data_structures/tree.c` | ⚠️ Partial | Fix broken sentinel check; properly free parent nodes (static array nodes don't need freeing) |
 
 ### Phase 2 — Header I/O
 
-| Function | File | Description |
-|----------|------|-------------|
-| `write_header()` | `compress.c` | Write `num_symbols` (4 bytes LE), then for each symbol: byte value + code length. Use `fw_write_bytes()`. |
-| `read_header()` | `decompress.c` | Read header format, fill `codes[]` and `code_lengths[]`, return symbol count. Use `fr_read()`. |
+| Function | File | Status | Description |
+|----------|------|--------|-------------|
+| `write_header()` | `src/core/compress.c` | ⚠️ Stub | Write `num_symbols` (4 bytes LE), then for each symbol: byte value + code length. Use `fw_write_bytes()`. |
+| `read_header()` | `src/core/decompress.c` | ⚠️ Stub | Read header format, fill `codes[]` and `code_lengths[]`, return symbol count. Use `fr_read()`. |
 
 ### Phase 3 — Compression & Decompression Data Paths
 
-| Function | File | Description |
-|----------|------|-------------|
-| `compress_data()` | `compress.c` | Create `bsw_new(input_fd)`, loop over input bytes, call `bsw_write_bits(code, length)` for each, flush at end. |
-| `decompress_data()` | `decompress.c` | Create `bs_new(input_fd)`, traverse tree bit-by-bit until leaf reached, write decoded byte via `fw_write_byte()`. |
-| `reconstruct_tree_from_codes()` | `decompress.c` | Build canonical Huffman tree from code lengths (Fischer-Jaffe or similar algorithm). |
+| Function | File | Status | Description |
+|----------|------|--------|-------------|
+| `compress_data()` | `src/core/compress.c` | ⚠️ Stub | Create `bsw_new(output_fd)`, loop over input bytes, call `bsw_write_bits(code, length)` for each, flush at end. |
+| `decompress_data()` | `src/core/decompress.c` | ⚠️ Stub | Create `bs_new(input_fd)`, traverse tree bit-by-bit until leaf reached, write decoded byte via `fw_write_byte()`. |
+| `reconstruct_tree_from_codes()` | `src/core/decompress.c` | ⚠️ Stub | Build canonical Huffman tree from code lengths (Fischer-Jaffe or similar algorithm). |
 
-### Phase 4 — Polish & Edge Cases
+### Phase 4 — Bug Fixes
+
+| Issue | File | Description |
+|-------|------|-------------|
+| `heapsort()` hardcoded to 256 | `src/utils/sort.c` | Should accept `count` parameter |
+| `new_tree_from_metric()` uses static array | `src/data_structures/tree.c` | Parent nodes are stored in static array but `free_tree_nodes()` can't free them properly. Consider dynamic allocation for parent nodes. |
+| `insert_node()` logic broken | `src/data_structures/list.c` | `trav->left` reference is wrong; should be `trav->left->right = n` |
+| `compress_file()` / `decompress_file()` return `void` | `src/core/compress.c`, `decompress.c` | Tests expect `int` return value (0 = success, -1 = error) |
+| `delete_list()` doesn't free nodes | `src/data_structures/list.c` | Only frees the list struct, not the nodes |
+
+### Phase 5 — Polish & Edge Cases
 
 - Handle single-symbol input (tree with only one leaf node)
 - Validate header integrity on decompression
@@ -107,7 +131,7 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 
 1. **MSB-first bit ordering** — bits are written/read starting from the most significant bit of each byte (consistent with standard practices).
 2. **Buffered I/O** — both reader and writer use a configurable buffer size (default 4096) to minimize system calls.
-3. **Static node array in tree** — `tree->nodes[512]` is allocated on the heap as part of the `tree` struct, not dynamically per-node. Only internal parent nodes that need dynamic allocation should use `malloc`.
+3. **Static node array in tree** — `tree->nodes[512]` is allocated as part of the `tree` struct. Only internal parent nodes need dynamic allocation, but the current implementation stores them in the static array which creates a `free_tree_nodes()` problem.
 4. **Header format** — 4-byte LE integer for symbol count, followed by pairs of (byte value: 1 byte, code length: 1 byte) for each distinct symbol. This is compact and easy to parse.
 5. **Error handling** — every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error). The top-level `compress_file()` / `decompress_file()` clean up all resources before returning.
 
@@ -117,29 +141,47 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 
 ```
 include/
-├── bitarray.h      ✓ updated (ba_write_to_file stub)
-├── bitstream.h     ✓ updated (full writer API)
-├── compress.h      ✓ updated (internal helpers declared)
-├── decompress.h    ✓ updated (reconstruct_tree_from_codes stub)
-├── file_reader.h   ✓ updated (fr_wd struct + writer API)
-├── file_writer.h   ✓ created (writer re-export header)
-├── list.h          ✓ updated (count field, new helpers)
-├── metric.h        — no changes needed
-├── node.h          ✓ updated (new_node, delete_node stubs)
-├── sort.h          ✓ updated (sort_nodes_by_weight stub)
-└── tree.h          ✓ updated (generate_codes, free_tree_nodes stubs)
+├── core/
+│   ├── compress.h      ✓ complete (compress_file, write_header, compress_data)
+│   └── decompress.h    ✓ complete (decompress_file, reconstruct_tree_from_codes)
+├── data_structures/
+│   ├── bitarray.h      ✓ complete
+│   ├── bitstream.h     ✓ complete (reader + writer)
+│   ├── list.h          ✓ complete
+│   ├── node.h          ✓ complete
+│   └── tree.h          ✓ complete
+├── io/
+│   └── file_io.h       ✓ complete (reader + writer)
+└── utils/
+    ├── metric.h        ✓ complete
+    └── sort.h          ✓ complete
 
-*.c
-├── bitarray.c      ✓ updated (null checks, ba_write_to_file stub)
-├── bitstream.c     ✓ updated (full writer implementation)
-├── compress.c      ✓ updated (full call chain with error handling)
-├── decompress.c    ✓ updated (full call chain with error handling)
-├── file_reader.c   ✓ updated (full writer implementation)
-├── list.c          ✓ updated (doubly-linked sorted list)
-├── main.c          — no changes needed
-├── metric.c        — no changes needed
-├── node.c          ✓ updated (new_node, delete_node stubs)
-├── sort.c          ✓ updated (sort_nodes_by_weight stub)
-└── tree.c          ✓ updated (generate_codes, free_tree_nodes stubs)
+src/
+├── core/
+│   ├── compress.c      ⚠️ partial (compress_file done, write_header + compress_data stubs)
+│   └── decompress.c    ⚠️ partial (decompress_file done, read_header + decompress_data + reconstruct_tree stubs)
+├── data_structures/
+│   ├── bitstream.c     ✓ complete
+│   ├── list.c          ⚠️ partial (delete_list broken, insert_node has issues)
+│   ├── node.c          ⚠️ stub (new_node returns NULL)
+│   └── tree.c          ⚠️ partial (generate_codes returns 0, free_tree_nodes broken)
+├── io/
+│   └── file_io.c       ✓ complete
+├── main.c              — exists (unseen in scan)
+└── utils/
+    ├── metric.c        ✓ complete
+    └── sort.c          ⚠️ stub (sort_nodes_by_weight is no-op, heapsort hardcoded)
 
-Makefile            ✓ updated (added new .c and .h files)
+tests/
+├── test_compress.c     ⚠️ expects int return from compress/decompress functions
+├── test_helpers.h      ✓ complete
+├── test_bitstream.c    — exists (unseen in scan)
+├── test_file_reader.c  — exists (unseen in scan)
+├── test_file_writer.c  — exists (unseen in scan)
+├── test_list.c         — exists (unseen in scan)
+├── test_tree.c         — exists (unseen in scan)
+└── test_utils.c        — exists (unseen in scan)
+
+Makefile                ✓ CMake wrapper
+CMakeLists.txt          — primary build system (unseen in scan)
+```
