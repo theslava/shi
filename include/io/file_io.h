@@ -23,14 +23,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <stdlib.h>
-#include <string.h>
+
 #ifdef _WIN32
 #include <io.h>
 #else
 #include <unistd.h>
 #endif
-#include <stdio.h>
 
 /* --- Reader struct --- */
 typedef struct _fr_fd {
@@ -44,13 +42,13 @@ typedef struct _fr_fd {
 } fr_fd;
 
 /* --- Writer struct --- */
-typedef struct _fr_wd {
+typedef struct _fw_fd {
 	char* file_path;
 	int file;
 	unsigned char* buffer;
 	unsigned int buffer_size;
 	unsigned int pos;	// current write position within buffer
-} fr_wd;
+} fw_fd;
 
 /* Reader API */
 fr_fd* fr_new(char* file_path, unsigned int bsize);
@@ -60,10 +58,11 @@ void fr_done(fr_fd *fd);
 void fr_info(fr_fd *fd);
 
 /* Writer API */
-fr_wd* fw_new(const char* file_path, unsigned int bsize);
-int fw_write_byte(fr_wd *wd, unsigned char byte);
-int fw_write_bytes(fr_wd *wd, const unsigned char *data, unsigned int len);
-void fw_flush(fr_wd *wd);
-void fw_done(fr_wd *wd);
+fw_fd* fw_new(const char* file_path, unsigned int bsize);
+int fw_write_byte(fw_fd *wd, unsigned char byte);
+int fw_write_bytes(fw_fd *wd, const unsigned char *data, unsigned int len);
+void fw_flush(fw_fd *wd);
+void fw_done(fw_fd *wd);
 
 #endif
+

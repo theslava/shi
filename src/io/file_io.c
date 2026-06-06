@@ -1,5 +1,7 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "io/file_io.h"
-#include "utils/metric.h"
 
 // creates a new file descriptor and opens the file for reading
 fr_fd* fr_new(char* file_path, unsigned int bsize) {
@@ -72,10 +74,10 @@ void fr_info(fr_fd *fd) {
  * ========================================================================== */
 
 /* creates a new file writer and opens the file for writing */
-fr_wd* fw_new(const char* file_path, unsigned int bsize) {
+fw_fd* fw_new(const char* file_path, unsigned int bsize) {
 	if (!file_path || !bsize) return NULL;
 
-	fr_wd* ret = (fr_wd*) malloc(sizeof(fr_wd));
+	fw_fd* ret = (fw_fd*) malloc(sizeof(fw_fd));
 	if (!ret) return NULL;
 
 	ret->file_path = (char*) malloc(strlen(file_path) + 1);
@@ -109,7 +111,7 @@ fr_wd* fw_new(const char* file_path, unsigned int bsize) {
 }
 
 // writes a single byte to the file (with buffering)
-int fw_write_byte(fr_wd *wd, unsigned char byte) {
+int fw_write_byte(fw_fd *wd, unsigned char byte) {
 	if (!wd) return -1;
 
 	/* If buffer is full, flush it first */
@@ -122,7 +124,7 @@ int fw_write_byte(fr_wd *wd, unsigned char byte) {
 }
 
 // writes an array of bytes to the file
-int fw_write_bytes(fr_wd *wd, const unsigned char *data, unsigned int len) {
+int fw_write_bytes(fw_fd *wd, const unsigned char *data, unsigned int len) {
 	if (!wd || !data || len == 0) return -1;
 
 	/* If data is larger than buffer, write directly */
@@ -140,11 +142,11 @@ int fw_write_bytes(fr_wd *wd, const unsigned char *data, unsigned int len) {
 		wd->buffer[wd->pos++] = data[i];
 	}
 
-	return 0;
+    return 0;
 }
 
 // flushes the buffer to disk
-void fw_flush(fr_wd *wd) {
+void fw_flush(fw_fd *wd) {
 	if (!wd || wd->pos == 0) return;
 
 	write(wd->file, wd->buffer, wd->pos);
@@ -152,7 +154,7 @@ void fw_flush(fr_wd *wd) {
 }
 
 // delete, cleanup, close the file writer
-void fw_done(fr_wd *wd) {
+void fw_done(fw_fd *wd) {
 	if (!wd) return;
 
 	/* Flush any remaining data in buffer */

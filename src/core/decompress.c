@@ -19,13 +19,14 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "io/file_io.h"
-#include "utils/metric.h"
 #include "data_structures/node.h"
 #include "data_structures/tree.h"
 #include "data_structures/bitstream.h"
 #include "core/compress.h"
-#include "data_structures/bitarray.h"
 #include "core/decompress.h"
 
 int decompress_file(const char* input_file, const char* output_file) {
@@ -55,7 +56,7 @@ int decompress_file(const char* input_file, const char* output_file) {
 	}
 
 	/* 4. Open the output file for writing */
-	fr_wd *output_fd = fw_new(output_file, 4096);
+	fw_fd *output_fd = fw_new(output_file, 4096);
 	if (!output_fd) {
 		fprintf(stderr, "Error: Could not open output file '%s'\n", output_file);
 		fr_done(input_fd);
@@ -119,7 +120,7 @@ int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256])
 	return num_symbols;
 }
 
-int decompress_data(fr_fd *input_fd, fr_wd *output_fd, node *tree_root) {
+int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root) {
 	if (!input_fd || !output_fd || !tree_root) return -1;
 
 	/* Create a bitstream reader */

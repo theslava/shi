@@ -19,6 +19,9 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#include <stdio.h>
+
 #include "io/file_io.h"
 #include "utils/metric.h"
 #include "data_structures/node.h"
@@ -64,7 +67,7 @@ int compress_file(const char* input_file, const char* output_file) {
 	}
 
 	/* 5. Open the output file for writing */
-	fr_wd *output_fd = fw_new(output_file, 4096);
+	fw_fd *output_fd = fw_new(output_file, 4096);
 	if (!output_fd) {
 		fprintf(stderr, "Error: Could not open output file '%s'\n", output_file);
 		delete_tree(t);
@@ -106,7 +109,7 @@ int compress_file(const char* input_file, const char* output_file) {
 	return 0;
 }
 
-int write_header(fr_wd *output_fd, const unsigned int codes[256],
+int write_header(fw_fd *output_fd, const unsigned int codes[256],
                  const int code_lengths[256], int num_symbols) {
 	if (!output_fd || !codes || !code_lengths || num_symbols <= 0) return -1;
 
@@ -136,7 +139,7 @@ int write_header(fr_wd *output_fd, const unsigned int codes[256],
 	return 0;
 }
 
-int compress_data(fr_fd *input_fd, fr_wd *output_fd,
+int compress_data(fr_fd *input_fd, fw_fd *output_fd,
                   const unsigned int codes[256], const int code_lengths[256]) {
 	if (!input_fd || !output_fd || !codes || !code_lengths) return -1;
 

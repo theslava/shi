@@ -39,14 +39,14 @@ void bs_done(bitstream *bs);
  * - bits_written: total number of bits written so far
  */
 typedef struct _bitstream_writer {
-    fr_wd *fd;
+    fw_fd *fd;
     unsigned char current_byte;
     int bit_offset;   /* 0 = most significant bit, 7 = least significant bit */
     int bits_written;
 } bitstream_writer;
 
 /* --- Writer API (new) --- */
-bitstream_writer* bsw_new(fr_wd *fd);
+bitstream_writer* bsw_new(fw_fd *fd);
 void bsw_write_bit(bitstream_writer *bsw, int bit);
 void bsw_write_bits(bitstream_writer *bsw, unsigned int value, int n);
 void bsw_flush(bitstream_writer *bsw);
