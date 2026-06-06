@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "utils/metric.h"
 
 metric * new_metric() {

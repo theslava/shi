@@ -6,8 +6,10 @@
  *      Reads/Writes MSB-first (bit 7, then 6, ..., then 0 of each byte).
  */
 
-#include "data_structures/bitstream.h"
 #include <stdlib.h>
+#include <stdio.h>
+
+#include "data_structures/bitstream.h"
 
 /* ==========================================================================
  * READER API
@@ -120,7 +122,7 @@ void bs_done(bitstream *bs) {
  * The writer takes ownership of writing to the fd but does NOT
  * close it — you must still call fr_done(fd) separately.
  */
-bitstream_writer* bsw_new(fr_wd *fd) {
+bitstream_writer* bsw_new(fw_fd *fd) {
     if (!fd) return NULL;
 
     bitstream_writer *bsw = (bitstream_writer*) malloc(sizeof(bitstream_writer));
