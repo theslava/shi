@@ -1,14 +1,13 @@
 # Cross-platform build using CMake
 # This Makefile is a simple wrapper for CMake
 
-.PHONY: all build clean test
+.PHONY: all build clean test configure
 
 # Default target
 all: build
 
 # Build target
-build:
-	cmake -B build -S . -G "MinGW Makefiles"
+build: configure
 	cmake --build build
 
 # Clean target
@@ -19,4 +18,6 @@ clean:
 test: build
 	cd build && ctest
 
-
+# Configure target
+configure:
+	cmake -B build -S . -G "MinGW Makefiles"
