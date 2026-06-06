@@ -8,13 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test_helpers.h"
-#include "file_writer.h"
+#include "io/file_io.h"
 
 /* Test: Create and destroy a file writer */
 static int test_fw_new(void) {
     TEST_START("fw_new / fw_done");
 
-    fw_fd *fd = fw_new("test_fw.tmp");
+    fw_fd *fd = fw_new("test_fw.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     fw_done(fd);
@@ -28,7 +28,7 @@ static int test_fw_new(void) {
 static int test_fw_write(void) {
     TEST_START("fw_write_byte");
 
-    fw_fd *fd = fw_new("test_fw_byte.tmp");
+    fw_fd *fd = fw_new("test_fw_byte.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     fw_write_byte(fd, 'X');
@@ -53,7 +53,7 @@ static int test_fw_write_multiple(void) {
     TEST_START("fw_write_byte multiple");
 
     const char *content = "Test!";
-    fw_fd *fd = fw_new("test_fw_multi.tmp");
+    fw_fd *fd = fw_new("test_fw_multi.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     for (int i = 0; content[i]; i++) {

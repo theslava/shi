@@ -140,8 +140,8 @@ bitstream_writer* bsw_new(fw_fd *fd) {
  * Write a single bit to the stream.
  * Bits are written MSB-first.
  */
-void bsw_write_bit(bitstream_writer *bsw, int bit) {
-    if (!bsw || bit < 0 || bit > 1) return;
+int bsw_write_bit(bitstream_writer *bsw, int bit) {
+    if (!bsw || bit < 0 || bit > 1) return -1;
 
     /* Set the bit at current position (MSB first) */
     unsigned char mask = (unsigned char)(1 << (7 - bsw->bit_offset));
@@ -160,6 +160,7 @@ void bsw_write_bit(bitstream_writer *bsw, int bit) {
         bsw->current_byte = 0;
         bsw->bit_offset = 0;
     }
+    return 0;
 }
 
 /*
