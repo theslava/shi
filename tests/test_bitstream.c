@@ -107,14 +107,14 @@ static int test_bsw_write(void) {
     TEST_START("bsw_write_bit / bsw_write_bits");
 
     create_temp_file("test_write.tmp", "");
-    fr_fd *fd = fr_new("test_write.tmp", 64);
+    fw_fd *fd = fw_new("test_write.tmp", 64);
     bitstream_writer *bsw = bsw_new(fd);
 
     /* Write 0xAA = 10101010 */
     bsw_write_bits(bsw, 0xAA, 8);
     bsw_flush(bsw);
     bsw_done(bsw);
-    fr_done(fd);
+    fw_done(fd);
 
     /* Now read it back */
     fr_fd *fd2 = fr_new("test_write.tmp", 64);
@@ -135,14 +135,14 @@ static int test_bsw_flush(void) {
     TEST_START("bsw_flush partial byte");
 
     create_temp_file("test_flush.tmp", "");
-    fr_fd *fd = fr_new("test_flush.tmp", 64);
+    fw_fd *fd = fw_new("test_flush.tmp", 64);
     bitstream_writer *bsw = bsw_new(fd);
 
     /* Write only 4 bits */
     bsw_write_bits(bsw, 0x0F, 4);
     bsw_flush(bsw);
     bsw_done(bsw);
-    fr_done(fd);
+    fw_done(fd);
 
     /* Read back — should get 0x0F padded with 4 zero bits */
     fr_fd *fd2 = fr_new("test_flush.tmp", 64);

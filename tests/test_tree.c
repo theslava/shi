@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test_helpers.h"
-#include "tree.h"
-#include "node.h"
+#include "data_structures/tree.h"
+#include "data_structures/node.h"
 
 /* Test: Create and destroy a tree */
 static int test_tree_new(void) {

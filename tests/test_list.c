@@ -8,17 +8,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test_helpers.h"
-#include "list.h"
-#include "node.h"
+#include "data_structures/list.h"
+#include "data_structures/node.h"
 
 /* Test: Create and destroy a list */
 static int test_list_new(void) {
-    TEST_START("list_new / list_done");
+    TEST_START("new_list / list_done");
 
-    list *l = list_new();
-    TEST_ASSERT(l != NULL, "list_new returns non-NULL");
+    list *l = new_list();
+    TEST_ASSERT(l != NULL, "new_list returns non-NULL");
 
-    list_done(l);
+    delete_list(l);
 
     TEST_END;
     return 0;
@@ -28,19 +28,19 @@ static int test_list_new(void) {
 static int test_list_append(void) {
     TEST_START("list_append");
 
-    list *l = list_new();
-    node *n1 = node_new(1, 'A');
-    node *n2 = node_new(2, 'B');
+    list *l = new_list();
+    node *n1 = new_node(1, 'A');
+    node *n2 = new_node(2, 'B');
     TEST_ASSERT(n1 != NULL && n2 != NULL, "nodes created");
 
     list_append(l, n1);
     list_append(l, n2);
 
-    TEST_ASSERT(list_count(l) == 2, "list has 2 elements");
+    TEST_ASSERT(list_size(l) == 2, "list has 2 elements");
 
-    list_done(l);
-    node_done(n1);
-    node_done(n2);
+    delete_list(l);
+    delete_node(n1);
+    delete_node(n2);
 
     TEST_END;
     return 0;
@@ -50,19 +50,19 @@ static int test_list_append(void) {
 static int test_list_pop(void) {
     TEST_START("list_pop");
 
-    list *l = list_new();
-    node *n = node_new(1, 'A');
+    list *l = new_list();
+    node *n = new_node(1, 'A');
     TEST_ASSERT(n != NULL, "node created");
 
     list_append(l, n);
-    TEST_ASSERT(list_count(l) == 1, "list has 1 element");
+    TEST_ASSERT(list_size(l) == 1, "list has 1 element");
 
-    node *popped = list_pop(l);
-    TEST_ASSERT(popped != NULL, "list_pop returns non-NULL");
-    TEST_ASSERT(list_count(l) == 0, "list is empty after pop");
+    node *popped = remove_node(l);
+    TEST_ASSERT(popped != NULL, "remove_node returns non-NULL");
+    TEST_ASSERT(list_size(l) == 0, "list is empty after pop");
 
-    list_done(l);
-    node_done(popped);
+    delete_list(l);
+    delete_node(popped);
 
     TEST_END;
     return 0;
@@ -72,11 +72,11 @@ static int test_list_pop(void) {
 static int test_list_pop_empty(void) {
     TEST_START("list_pop from empty list");
 
-    list *l = list_new();
-    node *popped = list_pop(l);
-    TEST_ASSERT(popped == NULL, "list_pop returns NULL on empty list");
+    list *l = new_list();
+    node *popped = remove_node(l);
+    TEST_ASSERT(popped == NULL, "remove_node returns NULL on empty list");
 
-    list_done(l);
+    delete_list(l);
 
     TEST_END;
     return 0;
@@ -86,7 +86,7 @@ static int test_list_pop_empty(void) {
 static int test_list_null(void) {
     TEST_START("NULL pointer handling");
 
-    list_done(NULL);  /* Should not crash */
+    delete_list(NULL);  /* Should not crash */
 
     TEST_END;
     return 0;

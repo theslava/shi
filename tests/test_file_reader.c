@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test_helpers.h"
-#include "file_reader.h"
+#include "io/file_io.h"
 
 /* Test: Create and destroy a file reader */
 static int test_fr_new(void) {
