@@ -1,5 +1,6 @@
 #include "data_structures/tree.h"
 #include "utils/metric.h"
+#include "utils/sort.h"
 
 /* Tree creation / destruction */
 tree* new_tree(void) {
@@ -12,6 +13,28 @@ tree* new_tree(void) {
 
 void delete_tree(tree *del) {
 	free(del);
+}
+
+/* Insert a node into the tree's array and update root if needed */
+int tree_insert(tree *t, node *n) {
+	if (!t || !n) return -1;
+
+	/* Find empty slot in the nodes array */
+	for (int i = 0; i < 512; i++) {
+		if (!t->nodes[i].left && !t->nodes[i].right && t->nodes[i].byte == 0 && t->nodes[i].weight == 0) {
+			/* Copy the node */
+			t->nodes[i] = *n;
+
+			/* If this is the root, set it */
+			if (!t->root) {
+				t->root = &(t->nodes[i]);
+			}
+
+			return 0;
+		}
+	}
+
+	return -1; /* Tree is full */
 }
 
 tree *new_tree_from_metric(metric * met) {
@@ -117,4 +140,5 @@ int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]) {
 	}
 	return num_symbols;
 }
+
 

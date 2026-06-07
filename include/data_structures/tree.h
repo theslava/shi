@@ -22,12 +22,10 @@
 
 #include <malloc.h>
 
-
-
-
 #include "data_structures/node.h"
 #include "utils/sort.h"
 #include "utils/metric.h"
+
 typedef struct _tree {
 	node * root;
 	node nodes[512]; /* array of nodes */
@@ -48,5 +46,3 @@ int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]);
 void free_tree_nodes(node *root);
 
 #endif
-
-
