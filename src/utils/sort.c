@@ -1,4 +1,5 @@
 #include "utils/sort.h"
+#include "data_structures/node.h"
 
 void swap(node **heap, int count) {
 	node *tmp = heap[0];

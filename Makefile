@@ -16,7 +16,12 @@ clean:
 
 # Test target
 test: build
-	cd build && ctest
+
+	cd build && ctest --output-on-failure
+
+# Run specific test
+test-%: build
+	cd build && ctest -R $*
 
 # Configure target
 configure:

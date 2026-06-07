@@ -40,7 +40,7 @@ node* new_node(int byte, long long unsigned int weight);
 void delete_node(node *n);
 
 long long unsigned int get_weight(node *n);
-int compare_nodes (node *a, node *b);
+int compare_nodes(node *a, node *b);
 
 #endif
 
