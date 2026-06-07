@@ -71,6 +71,8 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 
 - **CMakeLists.txt**: Primary build system (CMake-based) with main executable + 7 test executables
 - **Makefile**: Wrapper that invokes CMake (cross-platform, uses MinGW Makefiles on all platforms)
+- **run_tests.sh**: Bash test runner script for Unix/Linux/macOS (compiles and runs all tests)
+- **run_tests.ps1**: PowerShell test runner script for Windows (compiles and runs all tests)
 
 ### Test Files
 
@@ -213,4 +215,6 @@ docs/
 
 Makefile                ✓ CMake wrapper
 CMakeLists.txt          ✓ primary build system (main executable + 7 test executables)
+tests/run_tests.sh      ✓ Bash test runner (Unix/Linux/macOS)
+tests/run_tests.ps1     ✓ PowerShell test runner (Windows)
 ```
