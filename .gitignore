@@ -12,3 +12,5 @@ shi
 mcp-shell.log
 
 compile_commands.json
+
+*.tmp
