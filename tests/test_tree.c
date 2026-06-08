@@ -54,13 +54,17 @@ static int test_tree_build(void) {
     freq['B'] = 5;
     freq['C'] = 3;
 
-    tree *t = new_tree();
-    TEST_ASSERT(t != NULL, "new_tree returns non-NULL");
+    metric *met = new_metric();
+    TEST_ASSERT(met != NULL, "new_metric returns non-NULL");
 
-    /* Root should not be NULL */
+    memcpy(met->characters, freq, sizeof(freq));
+
+    tree *t = new_tree_from_metric(met);
+    TEST_ASSERT(t != NULL, "new_tree_from_metric returns non-NULL");
     TEST_ASSERT(t->root != NULL, "tree has root");
 
     delete_tree(t);
+    delete_metric(met);
 
     TEST_END;
     return 0;

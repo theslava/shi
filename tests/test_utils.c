@@ -47,8 +47,8 @@ static int test_sort_nodes(void) {
 
     sort_nodes_by_weight(nodes, 5);
 
-    /* After sorting, nodes should be in descending order by weight */
-    TEST_ASSERT(nodes[0]->weight >= nodes[4]->weight, "sorted descending");
+    /* After sorting, nodes should be in ascending order by weight */
+    TEST_ASSERT(nodes[0]->weight <= nodes[4]->weight, "sorted ascending");
 
     for (int i = 0; i < 5; i++) {
         delete_node(nodes[i]);

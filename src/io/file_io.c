@@ -5,14 +5,35 @@
 
 // creates a new file descriptor and opens the file for reading
 fr_fd* fr_new(char* file_path, unsigned int bsize) {
+	if (!file_path) return NULL;
+
 	// new file descriptor, create enough memory for stuff we need
 	fr_fd* ret_fd = (fr_fd*) malloc(sizeof(fr_fd));
-	ret_fd->file_path = (char*) malloc(sizeof(char)*strlen(file_path) + 1);
-	ret_fd->file = open(file_path,O_RDONLY);
-	ret_fd->buffer = (unsigned char*) malloc(sizeof(char) * bsize);
+	if (!ret_fd) return NULL;
+
+	ret_fd->file_path = (char*) malloc(strlen(file_path) + 1);
+	if (!ret_fd->file_path) {
+		free(ret_fd);
+		return NULL;
+	}
+	strcpy(ret_fd->file_path, file_path);
+
+	ret_fd->file = open(file_path, O_RDONLY);
+	if (ret_fd->file < 0) {
+		free(ret_fd->file_path);
+		free(ret_fd);
+		return NULL;
+	}
+
+	ret_fd->buffer = (unsigned char*) malloc(bsize);
+	if (!ret_fd->buffer) {
+		close(ret_fd->file);
+		free(ret_fd->file_path);
+		free(ret_fd);
+		return NULL;
+	}
 
 	// set up the file descriptor
-	strcpy(ret_fd->file_path,file_path);
 	ret_fd->buffer_size = bsize;
 	ret_fd->pos = 0;
 	ret_fd->inbuf = 0;
@@ -23,6 +44,7 @@ fr_fd* fr_new(char* file_path, unsigned int bsize) {
 
 // returns the next byte or -1 on error
 int fr_read(fr_fd *fd) {
+	if (!fd) return EOF;
 	int t = 0;
 	if(fd->eof_flag != 1) {
 		if(fd->pos >= fd->inbuf) {
@@ -51,6 +73,7 @@ void fr_rewind(fr_fd *fd) {
 
 // delete, cleanup, close the file related stuffs
 void fr_done(fr_fd *fd) {
+	if (!fd) return;
 	close(fd->file);
 	free(fd->buffer);
 	free(fd->file_path);
