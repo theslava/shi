@@ -184,9 +184,9 @@ foreach ($test_name in $testsToRun) {
     Write-Host "  Compiling..." -ForegroundColor $White
     $compileOutput = gcc -Wall -Wextra -std=c99 "-I$INCLUDE_DIR" -g $test_src @depArgsArray 2>&1
     if ($LASTEXITCODE -eq 0) {
-        Write-Host 'Compiled successfully' -ForegroundColor $GREEN
+        Write-Host "Compiled successfully" -ForegroundColor $GREEN
     } else {
-        Write-Host 'Compilation failed' -ForegroundColor $RED
+        Write-Host "Compilation failed" -ForegroundColor $RED
         Write-Host $compileOutput
         $FAILED++
         continue
@@ -196,10 +196,10 @@ foreach ($test_name in $testsToRun) {
     Write-Host "  Running $test_name..." -ForegroundColor $Yellow
     $testOutput = & $test_exec 2>&1
     if ($LASTEXITCODE -eq 0) {
-        Write-Host '  $test_name PASSED' -ForegroundColor $Green
+        Write-Host "  $test_name PASSED" -ForegroundColor $Green
         $PASSED++
     } else {
-        Write-Host '  $test_name FAILED' -ForegroundColor $Red
+        Write-Host "  $test_name FAILED" -ForegroundColor $Red
         Write-Host $testOutput
         $FAILED++
     }
