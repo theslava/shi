@@ -29,7 +29,7 @@ static int test_tree_insert(void) {
     TEST_START("tree_insert");
 
     tree *t = new_tree();
-    node *n = new_node(0, 'A');
+    node *n = new_node('A', 10);
     TEST_ASSERT(n != NULL, "new_node returns non-NULL");
 
     int result = tree_insert(t, n);
