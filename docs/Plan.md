@@ -16,7 +16,7 @@ The goal is to implement a complete **Huffman compression/decompression** tool i
 | `bitarray.c` | Bit array operations + `ba_write_to_file()` |
 | `compress.c` | High-level compression pipeline |
 | `decompress.c` | High-level decompression pipeline |
-| `dictionary.h` | Placeholder for future dictionary-based compression |
+
 
 **Data flow — Compression:**
 ```
@@ -49,7 +49,7 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 | `metric.h` | ✓ **Complete** — frequency counter struct + helpers |
 | `compress.h` | ✓ **Complete** — `compress_file()`, `write_header()`, `compress_data()`, `read_header()`, `decompress_data()`, `reconstruct_tree_from_codes()` |
 | `decompress.h` | ✓ **Complete** — `decompress_file()`, `reconstruct_tree_from_codes()` |
-| `dictionary.h` | ⚠️ **Empty** — placeholder file, no implementation yet |
+
 
 ### Implementation Files (`src/`)
 
@@ -91,12 +91,7 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 | `tests/test_tree.c` | ✓ **Complete** — 3 tests: create/destroy, insert, build from frequencies (NULL handling test included) |
 | `tests/test_utils.c` | ✓ **Complete** — 2 tests: sort nodes, NULL handling (metric test commented out) |
 
-### Examples
 
-| File | Status |
-|------|--------|
-| `examples/basic_usage.c` | ✓ **Complete** — demonstrates compress → decompress cycle |
-| `examples/advanced_usage.c` | ⚠️ **Partial** — has compilation issues (references `file_reader.h`/`file_writer.h` which don't exist; should use `file_io.h`) |
 
 ---
 
@@ -119,7 +114,7 @@ All core Huffman compression/decompression functionality is implemented and func
 
 | Issue | File | Description |
 |-------|------|-------------|
-| `advanced_usage.c` includes wrong headers | `examples/advanced_usage.c` | References `file_reader.h`/`file_writer.h` — should use `file_io.h` |
+
 | `ba_write_to_file()` is a stub | `src/data_structures/bitarray.c` | Returns -1; needs implementation to write bitarray data to file |
 | `delete_node()` has formatting issue | `src/data_structures/node.c` | Missing closing brace indentation (cosmetic, not functional) |
 | `test_tree.c` has commented-out test | `tests/test_tree.c` | `test_tree_insert()` and `test_tree_build()` assertions are incomplete |
@@ -144,7 +139,7 @@ All core Huffman compression/decompression functionality is implemented and func
 
 ### Phase 4 — Future Enhancements (out of scope for v1)
 
-- Implement `dictionary.h` for dictionary-based compression (e.g., LZ77 + Huffman)
+
 - Add command-line options for custom buffer sizes, verbose output
 - Support for reading from stdin / writing to stdout
 - Add `ba_write_to_file()` implementation for bitarray persistence
@@ -181,7 +176,7 @@ include/
 ├── utils/
 │   ├── metric.h        ✓ complete
 │   └── sort.h          ✓ complete
-└── dictionary.h        ⚠️ empty (placeholder)
+
 
 src/
 ├── core/
@@ -210,9 +205,7 @@ tests/
 ├── test_tree.c         ✓ complete (3 tests, some commented out)
 └── test_utils.c        ✓ complete (2 tests, 1 commented out)
 
-examples/
-├── basic_usage.c       ✓ complete
-└── advanced_usage.c    ⚠️ partial (wrong header includes)
+
 
 docs/
 └── Plan.md             — this file
