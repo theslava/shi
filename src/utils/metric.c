@@ -5,6 +5,9 @@
 metric * new_metric() {
 	int i = 0;
 	metric * met = (metric*)malloc(sizeof(struct _metric));
+	if (met == NULL) {
+		return NULL;
+	}
 	while (i < 256) met->characters[i++] = 0;
 	return met;
 }

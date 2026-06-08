@@ -39,7 +39,7 @@ int ba_unset_bit(bitarray *ba, unsigned int pos);
 int ba_flip_bit(bitarray *ba, unsigned int pos);
 
 /* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
-int ba_write_to_file(bitarray *ba, fr_fd *fd);
+int ba_write_to_file(bitarray *ba, fw_fd *fd);
 
 #endif
 

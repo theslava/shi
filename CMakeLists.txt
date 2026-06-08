@@ -100,6 +100,9 @@ add_executable(test_tree
     tests/test_tree.c
     src/data_structures/tree.c
     src/data_structures/node.c
+    src/utils/sort.c
+    src/utils/metric.c
+    src/io/file_io.c
 )
 target_include_directories(test_tree PRIVATE ${CMAKE_SOURCE_DIR}/tests)
 add_test(NAME test_tree COMMAND test_tree)

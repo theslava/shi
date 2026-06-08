@@ -16,14 +16,18 @@ node* new_node(int byte, long long unsigned int weight) {
 void delete_node(node *n) {
 	if (n != NULL) {
 		free(n);
-}
+	}
 }
 
 long long unsigned int get_weight(node *n) {
+	if (!n) return 0;
 	return n->weight;
 }
 
 int compare_nodes (node *a, node *b) {
+	if (!a && !b) return 0;
+	if (!a) return -1;
+	if (!b) return 1;
 	if (a->weight < b->weight) return -1;
 	else if (a->weight > b->weight) return 1;
 	else return 0;

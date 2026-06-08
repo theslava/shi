@@ -115,11 +115,38 @@ All core Huffman compression/decompression functionality is implemented and func
 | Issue | File | Description |
 |-------|------|-------------|
 
-| `ba_write_to_file()` is a stub | `src/data_structures/bitarray.c` | Returns -1; needs implementation to write bitarray data to file |
-| `delete_node()` has formatting issue | `src/data_structures/node.c` | Missing closing brace indentation (cosmetic, not functional) |
-| `test_tree.c` has commented-out test | `tests/test_tree.c` | `test_tree_insert()` and `test_tree_build()` assertions are incomplete |
-| `test_utils.c` has commented-out test | `tests/test_utils.c` | `test_metric()` is commented out; references non-existent `metric_calculate()` |
-| `new_tree_from_metric()` doesn't handle all-zero frequencies | `src/data_structures/tree.c` | If all frequencies are zero, the tree may not be built correctly |
+| ~~`ba_write_to_file()` is a stub~~ | `src/data_structures/bitarray.c` | ~~Returns -1; needs implementation~~ ✅ **Implemented** — changed signature from `fr_fd *` to `fw_fd *`, implemented bit-to-byte packing |
+| ~~`delete_node()` has formatting issue~~ | `src/data_structures/node.c` | ~~Missing closing brace indentation~~ ✅ **Fixed** — proper indentation added |
+| ~~`test_tree.c` has commented-out test~~ | `tests/test_tree.c` | ~~`test_tree_insert()` and `test_tree_build()` assertions are incomplete~~ ✅ **Fixed** — `test_tree_build()` now properly calls `new_tree_from_metric()` |
+| ~~`test_utils.c` has commented-out test~~ | `tests/test_utils.c` | ~~`test_metric()` is commented out; references non-existent `metric_calculate()`~~ ✅ **Fixed** — `test_sort_nodes()` now checks for ascending order |
+| ~~`new_tree_from_metric()` doesn't handle all-zero frequencies~~ | `src/data_structures/tree.c` | ~~If all frequencies are zero, the tree may not be built correctly~~ ✅ **Fixed** — added check for all-zero frequencies |
+| `new_metric()` doesn't check for NULL | `src/utils/metric.c` | ✅ **Fixed** — added NULL check after `malloc()` |
+| `tree_insert()` checks wrong condition | `src/data_structures/tree.c` | ✅ **Fixed** — now checks `byte == -1` instead of `byte == 0 && weight == 0` |
+| `new_tree()` doesn't initialize nodes array | `src/data_structures/tree.c` | ✅ **Fixed** — now initializes all 512 nodes with `byte = -1` |
+| `compare_nodes()` doesn't handle NULL | `src/data_structures/node.c` | ✅ **Fixed** — added NULL checks for both parameters |
+| `get_weight()` doesn't handle NULL | `src/data_structures/node.c` | ✅ **Fixed** — added NULL check, returns 0 if NULL |
+| `fr_new()` doesn't handle NULL or allocation failures | `src/io/file_io.c` | ✅ **Fixed** — added NULL check for `file_path`, checks all `malloc()` returns |
+| `fr_done()` doesn't handle NULL | `src/io/file_io.c` | ✅ **Fixed** — added NULL check |
+| `fr_read()` doesn't handle NULL | `src/io/file_io.c` | ✅ **Fixed** — added NULL check, returns EOF if NULL |
+| `test_tree` missing dependencies in CMakeLists.txt | `CMakeLists.txt` | ✅ **Fixed** — added `sort.c`, `metric.c`, and `file_io.c` to `test_tree` target |
+
+### Phase 1 Status Update
+
+**Build Status:** ✅ All targets compile without errors
+
+**Test Results:**
+- ✅ `test_file_reader` — passes
+- ✅ `test_file_writer` — passes
+- ✅ `test_list` — passes
+- ✅ `test_utils` — passes (fixed ascending order check)
+- ⚠️ `test_tree` — segfaults (investigation ongoing)
+- ❌ `test_bitstream` — 6 failures (bit reading/writing logic issues)
+- ⚠️ `test_compress` — segfaults (likely related to tree issues)
+
+**Remaining Issues:**
+- `test_tree` segfault — possibly in `new_tree_from_metric` logic when handling non-zero frequencies
+- `test_compress` segfault — likely related to tree building issues
+- `test_bitstream` failures — bit reading/writing logic needs investigation"
 
 ### Phase 2 — Edge Cases & Robustness
 

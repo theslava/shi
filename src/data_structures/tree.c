@@ -7,12 +7,21 @@ tree* new_tree(void) {
 	tree *ret = (tree*)malloc(sizeof(tree));
 	if (ret != NULL) {
 		ret->root = NULL;
+		/* Initialize all nodes in the array as empty */
+		for (int i = 0; i < 512; i++) {
+			ret->nodes[i].left = NULL;
+			ret->nodes[i].right = NULL;
+			ret->nodes[i].byte = -1;
+			ret->nodes[i].weight = 0;
+		}
 	}
 	return ret;
 }
 
 void delete_tree(tree *del) {
-	free(del);
+	if (del != NULL) {
+		free(del);
+	}
 }
 
 /* Insert a node into the tree's array and update root if needed */
@@ -20,28 +29,50 @@ int tree_insert(tree *t, node *n) {
 	if (!t || !n) return -1;
 
 	/* Find empty slot in the nodes array */
-	for (int i = 0; i < 512; i++) {
-		if (!t->nodes[i].left && !t->nodes[i].right && t->nodes[i].byte == 0 && t->nodes[i].weight == 0) {
-			/* Copy the node */
-			t->nodes[i] = *n;
+		for (int i = 0; i < 512; i++) {
+			if (t->nodes[i].byte == -1) {
+				/* Copy the node */
+				t->nodes[i] = *n;
 
-			/* If this is the root, set it */
-			if (!t->root) {
-				t->root = &(t->nodes[i]);
+				/* If this is the root, set it */
+				if (!t->root) {
+					t->root = &(t->nodes[i]);
+				}
+
+				return 0;
 			}
-
-			return 0;
 		}
-	}
 
 	return -1; /* Tree is full */
 }
 
 tree *new_tree_from_metric(metric * met) {
+	if (!met) return NULL;
+
 	int first_node = 0;
 	int last_node = 255;
 	int next_pnode = 256;
 	int i;
+
+	/* Check if all frequencies are zero */
+	int all_zero = 1;
+	for (i = 0; i < 256; i++) {
+		if (met->characters[i] > 0) {
+			all_zero = 0;
+			break;
+		}
+	}
+	if (all_zero) {
+		/* Create a tree with a single null leaf node */
+		tree *ret = new_tree();
+		if (!ret) return NULL;
+		ret->nodes[0].left = NULL;
+		ret->nodes[0].right = NULL;
+		ret->nodes[0].byte = -1;
+		ret->nodes[0].weight = 0;
+		ret->root = &(ret->nodes[0]);
+		return ret;
+	}
 
 	tree * ret = new_tree();
 	if (!ret) return NULL;

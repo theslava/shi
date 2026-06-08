@@ -117,15 +117,35 @@ int ba_flip_bit(bitarray *ba, unsigned int pos) {
 }
 
 /* Write the bitarray to a file descriptor (byte-aligned). Returns 0 on success. */
-int ba_write_to_file(bitarray *ba, fr_fd *fd) {
-	(void)ba;
-	(void)fd;
-	/* TODO: Implement writing bitarray data to file
-	 *
-	 * Algorithm:
-	 * 1. Calculate number of full bytes needed: (last + 8) / 8
-	 * 2. Iterate through each byte position
-	 * 3. Extract bits from the bitarray and pack them into bytes
-	 * 4. Write each packed byte using fr_write_byte() or similar */
-	return -1;
+int ba_write_to_file(bitarray *ba, fw_fd *fd) {
+	if (!ba || !fd) {
+		return -1;
+	}
+
+	/* Calculate number of bytes needed (round up) */
+	unsigned int num_bytes = (ba->last + 1 + 7) / 8;
+	if (num_bytes == 0) {
+		return 0;
+	}
+
+	unsigned char byte_val;
+	unsigned int byte_pos;
+
+	for (byte_pos = 0; byte_pos < num_bytes; byte_pos++) {
+		byte_val = 0;
+		for (int bit_in_byte = 7; bit_in_byte >= 0; bit_in_byte--) {
+			unsigned int bit_pos = byte_pos * 8 + (7 - bit_in_byte);
+			if (bit_pos < ba->size) {
+				int bit = ba_get_bit(ba, bit_pos);
+				if (bit == 1) {
+					byte_val |= (unsigned char)(1 << bit_in_byte);
+				}
+			}
+		}
+		if (fw_write_byte(fd, byte_val) != 0) {
+			return -1;
+		}
+	}
+
+	return 0;
 }

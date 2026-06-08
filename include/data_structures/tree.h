@@ -35,6 +35,9 @@ typedef struct _tree {
 tree* new_tree(void);
 void delete_tree(tree *del);
 
+/* Insert a node into the tree */
+int tree_insert(tree *t, node *n);
+
 tree *new_tree_from_metric(metric *met);
 
 /* Generate Huffman codes from the tree.
