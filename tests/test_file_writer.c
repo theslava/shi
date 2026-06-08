@@ -100,7 +100,7 @@ int main(void) {
     failures += test_fw_write_multiple();
     failures += test_fw_null();
 
-    printf("\n=== Results: %d test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
+    printf("\n=== Results: %s test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
 
     return failures == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

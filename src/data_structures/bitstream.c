@@ -16,25 +16,6 @@
  * ========================================================================== */
 
 /*
- * Create a new bitstream from an existing file descriptor.
- * The bitstream takes ownership of reading from the fd but does NOT
- * close it — you must still call fr_done(fd) separately.
- */
-bitstream* bs_new(fr_fd *fd) {
-    if (!fd) return NULL;
-
-    bitstream *bs = (bitstream*) malloc(sizeof(bitstream));
-    if (!bs) return NULL;
-
-    bs->fd = fd;
-    bs->current_byte = 0;
-    bs->bit_offset = 0;  /* Start at MSB (bit 7) */
-    bs->eof = 0;
-
-    return bs;
-}
-
-/*
  * Load the next byte from the file descriptor.
  * Returns 0 on EOF.
  */
@@ -50,6 +31,30 @@ static int bs_load_byte(bitstream *bs) {
 }
 
 /*
+ * Create a new bitstream from an existing file descriptor.
+ * The bitstream takes ownership of reading from the fd but does NOT
+ * close it — you must still call fr_done(fd) separately.
+ */
+bitstream* bs_new(fr_fd *fd) {
+    if (!fd) return NULL;
+
+    bitstream *bs = (bitstream*) malloc(sizeof(bitstream));
+    if (!bs) return NULL;
+
+    bs->fd = fd;
+    bs->bit_offset = 0;  /* Start at MSB (bit 7) */
+    bs->eof = 0;
+
+    /* Load the first byte from the file */
+    if (!bs_load_byte(bs)) {
+        free(bs);
+        return NULL;
+    }
+
+    return bs;
+}
+
+/*
  * Read a single bit (0 or 1) from the stream.
  * Returns -1 on EOF/error.
  */
@@ -57,7 +62,7 @@ int bs_read_bit(bitstream *bs) {
     if (!bs || bs->eof) return -1;
 
     /* Load a new byte if we've exhausted the current one */
-    if (bs->bit_offset > 7) {
+    if (bs->bit_offset >= 8) {
         if (!bs_load_byte(bs)) return -1;
     }
 
@@ -101,7 +106,30 @@ unsigned int bs_read_bits(bitstream *bs, int n) {
  * Check if the bitstream has reached EOF.
  */
 int bs_eof(bitstream *bs) {
-    return bs ? bs->eof : 1;
+    if (!bs) return 1;
+    if (bs->eof) return 1;
+    /* If bit_offset > 7, we need to try loading to know if we're at EOF */
+    if (bs->bit_offset >= 8) {
+        /* Save state */
+        int saved_offset = bs->bit_offset;
+        int saved_eof = bs->eof;
+        unsigned char saved_byte = bs->current_byte;
+        
+        /* Try to load next byte */
+        if (!bs_load_byte(bs)) {
+            /* Restore state and return EOF */
+            bs->bit_offset = saved_offset;
+            bs->eof = saved_eof;
+            bs->current_byte = saved_byte;
+            return 1;
+        }
+        
+        /* Restore state — we didn't actually advance */
+        bs->bit_offset = saved_offset;
+        bs->eof = saved_eof;
+        bs->current_byte = saved_byte;
+    }
+    return 0;
 }
 
 /*
@@ -141,7 +169,8 @@ bitstream_writer* bsw_new(fw_fd *fd) {
  * Bits are written MSB-first.
  */
 int bsw_write_bit(bitstream_writer *bsw, int bit) {
-    if (!bsw || bit < 0 || bit > 1) return -1;
+    if (!bsw) return 0;
+    if (bit < 0 || bit > 1) return -1;
 
     /* Set the bit at current position (MSB first) */
     unsigned char mask = (unsigned char)(1 << (7 - bsw->bit_offset));

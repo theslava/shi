@@ -44,7 +44,9 @@ static int test_bs_read_bit(void) {
     int bits[] = {0, 1, 0, 0, 0, 0, 0, 1};
     for (int i = 0; i < 8; i++) {
         int bit = bs_read_bit(bs);
-        TEST_ASSERT(bit == bits[i], "bit[3] == 0");
+        char msg[64];
+        snprintf(msg, sizeof(msg), "bit[%d] == %d", i, bits[i]);
+        TEST_ASSERT(bit == bits[i], msg);
     }
 
     bs_done(bs);

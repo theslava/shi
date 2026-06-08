@@ -141,13 +141,13 @@ All core Huffman compression/decompression functionality is implemented and func
 - ✅ `test_list` — passes
 - ✅ `test_utils` — passes (fixed ascending order check)
 - ✅ `test_tree` — **ALL PASSED** (fixed buffer overflow in `new_tree_from_metric`)
-- ❌ `test_bitstream` — 6 failures (bit reading/writing logic issues)
+- ✅ `test_bitstream` — **ALL PASSED** (fixed: `bs_new` now loads first byte, `bs_eof` proactively checks for EOF, `bsw_write_bit` returns 0 for NULL)
 - ⚠️ `test_compress` — segfaults (likely related to tree issues)
 
 **Remaining Issues:**
 - ~~`test_tree` segfault~~ — ✅ **Fixed** — buffer overflow in `new_tree_from_metric`: `node_index` array was sized 256 but needed 512 to accommodate all nodes (256 leaves + 255 internal nodes). Changed `node * node_index[256]` to `node * node_index[512]`.
-- `test_compress` segfault — likely related to tree building issues
-- `test_bitstream` failures — bit reading/writing logic needs investigation"
+- ~~`test_bitstream` failures~~ — ✅ **Fixed** — `bs_new` now loads the first byte from the file on initialization, `bs_eof` proactively checks for EOF by attempting to load the next byte and restoring state, `bsw_write_bit(NULL, ...)` now returns 0 (silently ignores NULL) to match the test's expectation.
+- `test_compress` failures — decompression fails, empty file compression fails"
 
 ### Phase 2 — Edge Cases & Robustness
 
