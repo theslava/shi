@@ -40,10 +40,10 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 | File | Status |
 |------|--------|
 | `file_io.h` | ✓ **Complete** — reader (`fr_fd`) and writer (`fw_fd`) structs + full API |
-| `node.h` | ✓ **Complete** — node struct, `new_node()`, `delete_node()`, `get_weight()`, `compare_nodes()` declared |
+| `node.h` | ✓ **Complete** — node struct, `new_node()`, `delete_node()`, `get_weight()`, `compare_nodes()` declared — **fixed: moved includes inside include guard to prevent circular dependencies** |
 | `sort.h` | ✓ **Complete** — heapsort helpers + `sort_nodes_by_weight()` declared |
 | `list.h` | ✓ **Complete** — doubly-linked list with `count`, insertion, removal, append |
-| `tree.h` | ✓ **Complete** — tree struct with static node array, `new_tree()`, `generate_codes()`, `free_tree_nodes()` declared |
+| `tree.h` | ✓ **Complete** — tree struct with static node array, `new_tree()`, `generate_codes()`, `free_tree_nodes()` declared — **fixed circular include issue in node.h** |
 | `bitstream.h` | ✓ **Complete** — full reader (`bitstream`) + writer (`bitstream_writer`) API (MSB-first bit packing) |
 | `bitarray.h` | ✓ **Complete** — bit array operations + `ba_write_to_file()` declared (stub implementation) |
 | `metric.h` | ✓ **Complete** — frequency counter struct + helpers |
@@ -61,7 +61,7 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 | `node.c` | ✓ **Complete** — `new_node()` allocates & initializes, `delete_node()` frees, `get_weight()`, `compare_nodes()` |
 | `sort.c` | ✓ **Complete** — `sort_nodes_by_weight()` uses insertion sort, `heapsort()` + `heapify()` + `swap()` helpers |
 | `list.c` | ✓ **Complete** — doubly-linked list with `new_list()`, `delete_list()`, `new_list_from_array()`, `insert_node()`, `remove_node()`, `list_append()`, `list_size()`, `list_get_head()` |
-| `tree.c` | ✓ **Complete** — `new_tree()`, `delete_tree()`, `tree_insert()`, `new_tree_from_metric()` (builds Huffman tree from frequency metric), `generate_codes()` (DFS traversal, assigns 0/1 codes), `free_tree_nodes()` |
+| `tree.c` | ✓ **Complete** — `new_tree()`, `delete_tree()`, `tree_insert()`, `new_tree_from_metric()` (builds Huffman tree from frequency metric), `generate_codes()` (DFS traversal, assigns 0/1 codes), `free_tree_nodes()` — **fixed buffer overflow in `node_index` array** |
 | `compress.c` | ✓ **Complete** — `compress_file()` full call chain, `write_header()` (4-byte LE symbol count + symbol/code-length pairs), `compress_data()` (bitstream writer loop) |
 | `decompress.c` | ✓ **Complete** — `decompress_file()` full call chain, `read_header()` (parses header format), `decompress_data()` (tree traversal bit-by-bit), `reconstruct_tree_from_codes()` (builds tree from codes) |
 | `bitarray.c` | ⚠️ **Partial** — all bit operations work, but `ba_write_to_file()` is a stub (returns -1) |
@@ -129,6 +129,7 @@ All core Huffman compression/decompression functionality is implemented and func
 | `fr_done()` doesn't handle NULL | `src/io/file_io.c` | ✅ **Fixed** — added NULL check |
 | `fr_read()` doesn't handle NULL | `src/io/file_io.c` | ✅ **Fixed** — added NULL check, returns EOF if NULL |
 | `test_tree` missing dependencies in CMakeLists.txt | `CMakeLists.txt` | ✅ **Fixed** — added `sort.c`, `metric.c`, and `file_io.c` to `test_tree` target |
+| `new_tree_from_metric()` buffer overflow — segfault | `src/data_structures/tree.c` | ✅ **Fixed** — `node_index` array was sized 256 but needed 512 to accommodate all nodes (256 leaves + 255 internal nodes). Changed `node * node_index[256]` to `node * node_index[512]`.
 
 ### Phase 1 Status Update
 
@@ -139,12 +140,12 @@ All core Huffman compression/decompression functionality is implemented and func
 - ✅ `test_file_writer` — passes
 - ✅ `test_list` — passes
 - ✅ `test_utils` — passes (fixed ascending order check)
-- ⚠️ `test_tree` — segfaults (investigation ongoing)
+- ✅ `test_tree` — **ALL PASSED** (fixed buffer overflow in `new_tree_from_metric`)
 - ❌ `test_bitstream` — 6 failures (bit reading/writing logic issues)
 - ⚠️ `test_compress` — segfaults (likely related to tree issues)
 
 **Remaining Issues:**
-- `test_tree` segfault — possibly in `new_tree_from_metric` logic when handling non-zero frequencies
+- ~~`test_tree` segfault~~ — ✅ **Fixed** — buffer overflow in `new_tree_from_metric`: `node_index` array was sized 256 but needed 512 to accommodate all nodes (256 leaves + 255 internal nodes). Changed `node * node_index[256]` to `node * node_index[512]`.
 - `test_compress` segfault — likely related to tree building issues
 - `test_bitstream` failures — bit reading/writing logic needs investigation"
 

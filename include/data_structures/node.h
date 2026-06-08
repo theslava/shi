@@ -17,13 +17,10 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <malloc.h>
-
-#include "io/file_io.h"
-#include "utils/metric.h"
-
 #ifndef __node_h__
 #define __node_h__
+
+#include <malloc.h>
 
 typedef struct _node {
 	int byte;
@@ -43,5 +40,3 @@ long long unsigned int get_weight(node *n);
 int compare_nodes(node *a, node *b);
 
 #endif
-
-
