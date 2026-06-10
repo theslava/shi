@@ -30,25 +30,43 @@
 #include "core/decompress.h"
 
 int decompress_file(const char* input_file, const char* output_file) {
-	/* 1. Open the compressed input file for reading */
+	fprintf(stderr, "DEBUG: Opening input file '%s'...\n", input_file);
 	fr_fd *input_fd = fr_new((char*)input_file, 4096);
 	if (!input_fd) {
 		fprintf(stderr, "Error: Could not open input file '%s'\n", input_file);
 		return -1;
 	}
+	fprintf(stderr, "DEBUG: Input file opened.\n");
 
 	/* 2. Read the header to reconstruct codes and code lengths */
 	unsigned int codes[256];
 	int code_lengths[256];
+	fprintf(stderr, "DEBUG: Reading header...\n");
 	int num_symbols = read_header(input_fd, codes, code_lengths);
-	if (num_symbols <= 0) {
+	fprintf(stderr, "DEBUG: Header read, num_symbols=%d\n", num_symbols);
+	if (num_symbols < 0) {
 		fprintf(stderr, "Error: Could not read header from '%s'\n", input_file);
 		fr_done(input_fd);
 		return -1;
 	}
+	/* Handle empty file: no data to decompress */
+	if (num_symbols == 0) {
+		fw_fd *output_fd = fw_new(output_file, 4096);
+		if (!output_fd) {
+			fprintf(stderr, "Error: Could not open output file '%s'\n", output_file);
+			fr_done(input_fd);
+			return -1;
+		}
+		fw_done(output_fd);
+		fr_done(input_fd);
+		printf("Decompression complete: '%s' -> '%s' (empty file)\n", input_file, output_file);
+		return 0;
+	}
 
 	/* 3. Reconstruct the Huffman tree from the codes */
+	fprintf(stderr, "DEBUG: Reconstructing tree...\n");
 	node *tree_root = reconstruct_tree_from_codes(codes, code_lengths, num_symbols);
+	fprintf(stderr, "DEBUG: Tree reconstructed, root=%p\n", (void*)tree_root);
 	if (!tree_root) {
 		fprintf(stderr, "Error: Could not reconstruct Huffman tree\n");
 		fr_done(input_fd);
@@ -86,7 +104,8 @@ int decompress_file(const char* input_file, const char* output_file) {
 }
 
 int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256]) {
-	if (!input_fd || !codes || !code_lengths) return -1;
+	fprintf(stderr, "DEBUG read_header: starting\n");
+	if (!input_fd || !codes || !code_lengths) { fprintf(stderr, "DEBUG read_header: NULL check failed\n"); return -1; }
 
 	/* Initialize arrays */
 	for (int i = 0; i < 256; i++) {
@@ -95,17 +114,22 @@ int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256])
 	}
 
 	/* Read num_symbols as 4-byte little-endian integer */
+	fprintf(stderr, "DEBUG read_header: reading 4 bytes for num_symbols\n");
 	int b0 = fr_read(input_fd);
-	if (b0 == EOF) return -1;
+	fprintf(stderr, "DEBUG read_header: b0=%d\n", b0);
+	if (b0 == EOF) { fprintf(stderr, "DEBUG read_header: EOF on b0\n"); return -1; }
 	int b1 = fr_read(input_fd);
-	if (b1 == EOF) return -1;
+	fprintf(stderr, "DEBUG read_header: b1=%d\n", b1);
+	if (b1 == EOF) { fprintf(stderr, "DEBUG read_header: EOF on b1\n"); return -1; }
 	int b2 = fr_read(input_fd);
-	if (b2 == EOF) return -1;
+	fprintf(stderr, "DEBUG read_header: b2=%d\n", b2);
+	if (b2 == EOF) { fprintf(stderr, "DEBUG read_header: EOF on b2\n"); return -1; }
 	int b3 = fr_read(input_fd);
-	if (b3 == EOF) return -1;
+	fprintf(stderr, "DEBUG read_header: b3=%d\n", b3);
+	if (b3 == EOF) { fprintf(stderr, "DEBUG read_header: EOF on b3\n"); return -1; }
 
 	int num_symbols = (unsigned char)b0 | ((unsigned char)b1 << 8) | ((unsigned char)b2 << 16) | ((unsigned char)b3 << 24);
-	if (num_symbols <= 0 || num_symbols > 256) return -1;
+	if (num_symbols < 0 || num_symbols > 256) return -1;
 
 	/* For each symbol, read byte value and code length */
 	for (int i = 0; i < num_symbols; i++) {
@@ -126,9 +150,11 @@ int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root) {
 	/* Create a bitstream reader */
 	bitstream *bs = bs_new(input_fd);
 	if (!bs) return -1;
+	fprintf(stderr, "DEBUG decompress_data: bitstream created\n");
 
 	/* Handle single-symbol tree (root is a leaf) */
 	if (tree_root->byte >= 0) {
+		fprintf(stderr, "DEBUG decompress_data: single-symbol tree\n");
 		/* Read remaining bytes from input until EOF */
 		int byte;
 		while ((byte = fr_read(input_fd)) != EOF) {
@@ -138,8 +164,10 @@ int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root) {
 		return 0;
 	}
 
+	fprintf(stderr, "DEBUG decompress_data: traversing tree\n");
 	/* Traverse the Huffman tree bit-by-bit */
 	node *current = tree_root;
+	int nodes_traversed = 0;
 	while (!bs_eof(bs)) {
 		int bit = bs_read_bit(bs);
 		if (bit == -1) break; /* EOF */
@@ -150,13 +178,23 @@ int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root) {
 			current = current->right;
 		}
 
+		if (!current) {
+			fprintf(stderr, "DEBUG decompress_data: CRASH - current is NULL after bit=%d\n", bit);
+			break;
+		}
+
 		/* Reached a leaf node: write the decoded byte */
 		if (current->byte >= 0) {
 			fw_write_byte(output_fd, (unsigned char)current->byte);
 			current = tree_root; /* Reset to root */
 		}
+		nodes_traversed++;
+		if (nodes_traversed % 1000 == 0) {
+			fprintf(stderr, "DEBUG decompress_data: %d nodes traversed\n", nodes_traversed);
+		}
 	}
 
+	fprintf(stderr, "DEBUG decompress_data: done, %d nodes traversed\n", nodes_traversed);
 	bs_done(bs);
 	return 0;
 }
@@ -165,13 +203,37 @@ int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root) {
  * Tree reconstruction from Huffman codes (canonical approach)
  * ========================================================================== */
 
-/* Build a Huffman tree from code lengths using a prefix-code reconstruction algorithm. */
+/* Helper: recursive tree builder — inserts leaf at the given bit path. */
+static int tree_insert_leaf(node *current, int bit_pos, int bit, int byte_val) {
+	if (bit_pos < 0) {
+		/* We've consumed all bits — this should be a leaf */
+		current->byte = byte_val;
+		return 0;
+	}
+	if (bit == 0) {
+		if (!current->left) {
+			current->left = new_node(-1, 0);
+			if (!current->left) return -1;
+		}
+		return tree_insert_leaf(current->left, bit_pos - 1, 0, byte_val);
+	} else {
+		if (!current->right) {
+			current->right = new_node(-1, 0);
+			if (!current->right) return -1;
+		}
+		return tree_insert_leaf(current->right, bit_pos - 1, 1, byte_val);
+	}
+}
+
+/* Build a Huffman tree from code lengths using canonical Huffman code reconstruction.
+ * The header only stores (byte_value, code_length) pairs, so we must reconstruct
+ * the canonical codes from code lengths before building the tree. */
 node* reconstruct_tree_from_codes(const unsigned int codes[256],
                                    const int code_lengths[256],
                                    int num_symbols) {
 	if (!codes || !code_lengths || num_symbols <= 0) return NULL;
 
-	/* Find the maximum code length */
+	/* Step 1: Find the maximum code length */
 	int max_len = 0;
 	for (int i = 0; i < 256; i++) {
 		if (code_lengths[i] > max_len) {
@@ -181,38 +243,59 @@ node* reconstruct_tree_from_codes(const unsigned int codes[256],
 
 	if (max_len == 0) return NULL;
 
-	/* Handle single-symbol case */
-	if (max_len == 1) {
-		for (int i = 0; i < 256; i++) {
-			if (code_lengths[i] == 1) {
-				node *leaf = new_node(i, 0);
-				if (!leaf) return NULL;
-				node *root = new_node(-1, 0);
-				if (!root) { free(leaf); return NULL; }
-				root->left = leaf;
-				return root;
-			}
+	/* Step 2: Count how many symbols have each code length */
+	int *count = (int *)calloc(max_len + 1, sizeof(int));
+	if (!count) return NULL;
+	for (int i = 0; i < 256; i++) {
+		if (code_lengths[i] > 0) {
+			count[code_lengths[i]]++;
 		}
-		return NULL;
 	}
 
-	/* Build the tree using the codes directly.
-	 * For each symbol, insert its code bits into the tree. */
+	/* Step 3: Compute the first code for each length (canonical Huffman) */
+	unsigned int *first_code = (unsigned int *)calloc(max_len + 1, sizeof(unsigned int));
+	if (!first_code) { free(count); return NULL; }
+
+	unsigned int code = 0;
+	for (int len = 1; len <= max_len; len++) {
+		first_code[len] = code;
+		code = (code + (unsigned int)count[len]) << 1;
+	}
+
+	/* Step 4: Assign canonical codes to each symbol */
+	unsigned int *symbol_code = (unsigned int *)calloc(256, sizeof(unsigned int));
+	if (!symbol_code) { free(count); free(first_code); return NULL; }
+	for (int i = 0; i < 256; i++) {
+		if (code_lengths[i] > 0) {
+			symbol_code[i] = first_code[code_lengths[i]];
+			first_code[code_lengths[i]]++;
+		}
+	}
+
+	/* Debug: print code lengths and reconstructed codes */
+	fprintf(stderr, "DEBUG reconstruct: code lengths: ");
+	for (int i = 0; i < 256; i++) {
+		if (code_lengths[i] > 0) fprintf(stderr, "%c:%d ", (char)i, code_lengths[i]);
+	}
+	fprintf(stderr, "\n");
+
+	/* Step 5: Build the tree by inserting each symbol's canonical code */
 	node *root = new_node(-1, 0);
-	if (!root) return NULL;
+	if (!root) { free(count); free(first_code); free(symbol_code); return NULL; }
 
 	for (int i = 0; i < 256; i++) {
 		if (code_lengths[i] <= 0) continue;
-
-		/* Insert this symbol's code into the tree */
+		int len = code_lengths[i];
 		node *current = root;
-		for (int bit_pos = code_lengths[i] - 1; bit_pos >= 0; bit_pos--) {
-			int bit = (codes[i] >> bit_pos) & 1;
+		/* Insert code bits from MSB (bit_pos = len-1) to LSB (bit_pos = 0) */
+		for (int bit_pos = len - 1; bit_pos >= 0; bit_pos--) {
+			int bit = (symbol_code[i] >> bit_pos) & 1;
 			if (bit == 0) {
 				if (!current->left) {
 					current->left = new_node(-1, 0);
 					if (!current->left) {
 						free_tree_nodes(root);
+						free(count); free(first_code); free(symbol_code);
 						return NULL;
 					}
 				}
@@ -222,6 +305,7 @@ node* reconstruct_tree_from_codes(const unsigned int codes[256],
 					current->right = new_node(-1, 0);
 					if (!current->right) {
 						free_tree_nodes(root);
+						free(count); free(first_code); free(symbol_code);
 						return NULL;
 					}
 				}
@@ -234,5 +318,8 @@ node* reconstruct_tree_from_codes(const unsigned int codes[256],
 		}
 	}
 
+	free(count);
+	free(first_code);
+	free(symbol_code);
 	return root;
 }

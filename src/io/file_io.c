@@ -18,7 +18,11 @@ fr_fd* fr_new(char* file_path, unsigned int bsize) {
 	}
 	strcpy(ret_fd->file_path, file_path);
 
+	#ifdef _WIN32
+	ret_fd->file = open(file_path, O_RDONLY | O_BINARY);
+#else
 	ret_fd->file = open(file_path, O_RDONLY);
+#endif
 	if (ret_fd->file < 0) {
 		free(ret_fd->file_path);
 		free(ret_fd);
@@ -108,10 +112,11 @@ fw_fd* fw_new(const char* file_path, unsigned int bsize) {
 
 	/* Open for writing/truncating; create if doesn't exist */
 #ifdef _WIN32
-	ret->file = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	ret->file = open(file_path, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
 #else
-	ret->file = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	ret->file = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 #endif
+
 
 	if (ret->file < 0) {
 		free(ret->file_path);
