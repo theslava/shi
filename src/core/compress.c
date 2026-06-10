@@ -39,6 +39,15 @@ int compress_file(const char* input_file, const char* output_file) {
 
 	/* 2. Build the frequency metric from the input data */
 	metric *met = new_metric_from_file(input_fd);
+	fprintf(stderr, "DEBUG compress: metric built, distinct symbols: ");
+	int distinct = 0;
+	for (int i = 0; i < 256; i++) {
+		if (met->characters[i] > 0) {
+			fprintf(stderr, "%c:%d ", (char)i, met->characters[i]);
+			distinct++;
+		}
+	}
+	fprintf(stderr, "\ntotal distinct=%d\n", distinct);
 	if (!met) {
 		fprintf(stderr, "Error: Could not build metric from '%s'\n", input_file);
 		fr_done(input_fd);
@@ -58,8 +67,12 @@ int compress_file(const char* input_file, const char* output_file) {
 	unsigned int codes[256];
 	int code_lengths[256];
 	int num_symbols = generate_codes(t, codes, code_lengths);
-	if (num_symbols <= 0) {
-		fprintf(stderr, "Error: No symbols found in input\n");
+	fprintf(stderr, "DEBUG compress: num_symbols=%d\n", num_symbols);
+	for (int i = 0; i < 256; i++) {
+		if (code_lengths[i] > 0) fprintf(stderr, "DEBUG compress: symbol %c len=%u code=%u\n", (char)i, code_lengths[i], codes[i]);
+	}
+	if (num_symbols < 0) {
+		fprintf(stderr, "Error: Could not generate codes\n");
 		delete_tree(t);
 		delete_metric(met);
 		fr_done(input_fd);
@@ -86,7 +99,21 @@ int compress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 7. Compress the data using the generated codes */
+	/* Handle empty file: no data to compress */
+	if (num_symbols == 0) {
+		fw_flush(output_fd);
+		fw_done(output_fd);
+		delete_tree(t);
+		delete_metric(met);
+		fr_done(input_fd);
+		printf("Compression complete: '%s' -> '%s' (empty file)\n", input_file, output_file);
+		return 0;
+	}
+
+	/* 7. Rewind the input file before compressing */
+	fr_rewind(input_fd);
+
+	/* 8. Compress the data using the generated codes */
 	if (compress_data(input_fd, output_fd, codes, code_lengths) != 0) {
 		fprintf(stderr, "Error: Compression failed\n");
 		fw_done(output_fd);
@@ -96,7 +123,7 @@ int compress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 8. Flush and close the output file */
+	/* 9. Flush and close the output file */
 	fw_flush(output_fd);
 	fw_done(output_fd);
 
@@ -111,7 +138,8 @@ int compress_file(const char* input_file, const char* output_file) {
 
 int write_header(fw_fd *output_fd, const unsigned int codes[256],
                  const int code_lengths[256], int num_symbols) {
-	if (!output_fd || !codes || !code_lengths || num_symbols <= 0) return -1;
+	if (!output_fd || !codes || !code_lengths) return -1;
+	if (num_symbols < 0) return -1;
 
 	/* Write num_symbols as 4-byte little-endian integer */
 	unsigned char header[4];
