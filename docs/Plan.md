@@ -142,12 +142,42 @@ All core Huffman compression/decompression functionality is implemented and func
 - ✅ `test_utils` — passes (fixed ascending order check)
 - ✅ `test_tree` — **ALL PASSED** (fixed buffer overflow in `new_tree_from_metric`)
 - ✅ `test_bitstream` — **ALL PASSED** (fixed: `bs_new` now loads first byte, `bs_eof` proactively checks for EOF, `bsw_write_bit` returns 0 for NULL)
-- ⚠️ `test_compress` — segfaults (likely related to tree issues)
+- ✅ `test_compress` — **ALL 3 TESTS PASSED** (fixed Huffman code roundtrip bug)
 
 **Remaining Issues:**
 - ~~`test_tree` segfault~~ — ✅ **Fixed** — buffer overflow in `new_tree_from_metric`: `node_index` array was sized 256 but needed 512 to accommodate all nodes (256 leaves + 255 internal nodes). Changed `node * node_index[256]` to `node * node_index[512]`.
 - ~~`test_bitstream` failures~~ — ✅ **Fixed** — `bs_new` now loads the first byte from the file on initialization, `bs_eof` proactively checks for EOF by attempting to load the next byte and restoring state, `bsw_write_bit(NULL, ...)` now returns 0 (silently ignores NULL) to match the test's expectation.
-- `test_compress` failures — decompression fails, empty file compression fails"
+- ~~`test_compress` failures~~ — ✅ **Fixed** — Huffman code roundtrip bug fixed. See Phase 1.1 below for details."
+
+### Phase 1.1 — Huffman Code Roundtrip Bug Fix
+
+**Problem:** The `test_compress` roundtrip test was failing — decompression produced garbled output even though it ran without crashing.
+
+**Root Cause:** The header format stored only `(byte_value, code_length)` pairs, but decompression used canonical Huffman code reconstruction from just the lengths. Since the compression side used tree-traversal codes (not canonical), the reconstructed tree didn't match the original tree, causing wrong bit-to-symbol mappings.
+
+**Changes Made:**
+
+| File | Change |
+|------|--------|
+| `src/core/compress.c` — `write_header()` | Updated to also write the actual code values as 4-byte little-endian integers after each `(byte_value, code_length)` pair. New header format per symbol: `byte_value` (1B) + `code_length` (1B) + `code_value` (4B LE). |
+| `src/core/decompress.c` — `read_header()` | Updated to read the 4-byte code value after each `(byte_value, code_length)` pair and store it in the `codes[]` array. Also reads original file_size (4B LE) from header. |
+| `src/core/decompress.c` — `reconstruct_tree_from_codes()` | Replaced the canonical Huffman reconstruction with direct tree building from the actual code values stored in the header. |
+| `src/core/decompress.c` — `decompress_data()` | Added `file_size` parameter to know when to stop decoding (prevents extra output from padding bits in the last byte). |
+| `src/core/compress.c` — `compress_file()` | Added original file_size counting (with proper `fr_rewind` fix) and passes it to `write_header()`. |
+| `src/io/file_io.c` — `fr_rewind()` | Fixed: added `fd->inbuf = 0` to properly reset the buffered reader state. Without this, the buffer wasn't invalidated after seeking, causing stale data to be returned. |
+| `include/core/compress.h` | Updated function signatures for `write_header()`, `read_header()`, and `decompress_data()` to match new parameters. |
+
+**Test Results After Fix:**
+- ✅ `test_compress` roundtrip — **PASS** (decompressed content matches original)
+- ✅ `test_compress` empty file — **PASS**
+- ✅ `test_compress` repeated content — **PASS**
+
+**New Header Format:**
+```
+[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]
+```
+
+---
 
 ### Phase 2 — Edge Cases & Robustness
 
@@ -180,7 +210,7 @@ All core Huffman compression/decompression functionality is implemented and func
 1. **MSB-first bit ordering** — bits are written/read starting from the most significant bit of each byte (consistent with standard practices).
 2. **Buffered I/O** — both reader and writer use a configurable buffer size (default 4096) to minimize system calls.
 3. **Static node array in tree** — `tree->nodes[512]` is allocated as part of the `tree` struct. Only internal parent nodes need dynamic allocation, but the current implementation stores them in the static array which creates a `free_tree_nodes()` problem (nodes in the array don't need freeing).
-4. **Header format** — 4-byte LE integer for symbol count, followed by pairs of (byte value: 1 byte, code length: 1 byte) for each distinct symbol. This is compact and easy to parse.
+4. **Header format** — `[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]`. The file_size tells decompression when to stop. The actual code values (not just lengths) are stored to ensure the decompression tree matches the compression tree exactly.
 5. **Error handling** — every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error). The top-level `compress_file()` / `decompress_file()` clean up all resources before returning.
 6. **Cross-platform compatibility** — build system uses CMake with MinGW Makefiles on all platforms; conditional compilation for Windows POSIX functions (`_CRT_SECURE_NO_WARNINGS`, `open()` mode flags).
 

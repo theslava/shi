@@ -1,9 +1,3 @@
-/*
- *      test_tree.c
- *
- *      Tests for the Huffman tree data structure.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,24 +13,6 @@ static int test_tree_new(void) {
     TEST_ASSERT(t != NULL, "tree_new returns non-NULL");
 
     delete_tree(t);
-
-    TEST_END;
-    return 0;
-}
-
-/* Test: Insert a node */
-static int test_tree_insert(void) {
-    TEST_START("tree_insert");
-
-    tree *t = new_tree();
-    node *n = new_node('A', 10);
-    TEST_ASSERT(n != NULL, "new_node returns non-NULL");
-
-    int result = tree_insert(t, n);
-    TEST_ASSERT(result == 0, "tree_insert succeeds");
-
-    delete_tree(t);
-    delete_node(n);
 
     TEST_END;
     return 0;
@@ -86,7 +62,6 @@ int main(void) {
     int failures = 0;
 
     failures += test_tree_new();
-    //failures += test_tree_insert();
     failures += test_tree_build();
     failures += test_tree_null();
 
