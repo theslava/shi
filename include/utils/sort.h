@@ -1,5 +1,5 @@
 /*
- *      metric.h
+ *      sort.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,44 +17,16 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __metric_h__
-#define __metric_h__
+#ifndef __sort_h__
+#define __sort_h__
 
-#include <malloc.h>
-#include "file_reader.h"
+#include "data_structures/node.h"
 
-typedef struct _metric {
-	long long unsigned int characters[256];
-} metric;
+void swap(node **heap, int count);
+void heapify(node **heap, int count, int root);
+void heapsort(node **heap, int count);
 
-metric * new_metric() {
-	int i = 0;
-	metric * met = (metric*)malloc(sizeof(struct _metric));
-	while (i < 256) met->characters[i++] = 0;
-	return met;
-}
-
-metric * new_metric_from_file(fr_fd *file) {
-	int i;
-	metric * met = new_metric();
-	while ((i = fr_read(file)) != EOF) {
-		met->characters[i]++;
-	}
-	return met;
-}
-
-void fill_metric(metric* met, fr_fd *file) {
-	int i;
-	while ((i = fr_read(file)) != EOF) {
-		met->characters[i]++;
-	}
-	return;
-}
-
-void delete_metric (metric* met) {
-	free(met);
-	return;
-}
+/* Sort an array of node pointers by weight (ascending) */
+void sort_nodes_by_weight(node **nodes, int count);
 
 #endif
-

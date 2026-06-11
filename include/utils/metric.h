@@ -1,5 +1,5 @@
 /*
- *      dictionary.h
+ *      metric.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -16,3 +16,20 @@
  *      You should have received a copy of the GNU General Public License
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef __metric_h__
+#define __metric_h__
+
+#include <malloc.h>
+#include "io/file_io.h"
+
+typedef struct _metric {
+	long long unsigned int characters[256];
+} metric;
+
+metric * new_metric();
+metric * new_metric_from_file(fr_fd *file);
+void fill_metric(metric* met, fr_fd *file);
+void delete_metric (metric* met);
+#endif
+

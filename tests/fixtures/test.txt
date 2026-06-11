@@ -1,0 +1,7 @@
+This is a test file for the bitstream demo.
+It contains multiple lines of text.
+Each line has a different number of characters.
+
+This text is used to verify that the bitstream
+reader can correctly read and write bits
+from a real file.

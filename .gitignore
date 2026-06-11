@@ -3,6 +3,14 @@ build/
 
 # Executable
 shi
+*.exe
 
 # Object files in root (if any)
 *.o
+
+# MCP shell logs
+mcp-shell.log
+
+compile_commands.json
+
+*.tmp

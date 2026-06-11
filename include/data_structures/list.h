@@ -1,5 +1,5 @@
 /*
- *      node.h
+ *      list.h
  *
  *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
  *
@@ -17,28 +17,27 @@
  *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __node_h__
-#define __node_h__
+#ifndef __list_h__
+#define __list_h__
 
-typedef struct _node {
-	int byte;
-		/* if byte <0, then this is a parent node (left/right pointers valid)
-		 * if byte >=0, then this is a leaf node (left/right pointers NOT valid)
-		 */
-	long long unsigned int weight;
-	struct _node *left;
-	struct _node *right;
-} node;
+#include "data_structures/node.h"
+#include "utils/metric.h"
+typedef struct _list {
+	node *head;
+	int count;
+} list;
 
-long long unsigned int get_weight(node *n) {
-	return n->weight;
-}
+/* List creation / destruction */
+list* new_list(void);
+void delete_list(list *l);
+list *new_list_from_array(node** array, int count);
+void insert_node(list* l, node* n, metric* m);
+node* remove_node(list* l);
 
-int compare_nodes (node *a, node *b) {
-	int result = a->weight - b->weight;
-	if (result < 0) return -1;
-	else if (result > 0) return 1;
-	else return 0;
-}
+/* Iteration helpers */
+int list_size(const list *l);
+node* list_get_head(const list *l);
+list* list_append(list *l, node *n);
 
 #endif
+
