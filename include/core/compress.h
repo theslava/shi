@@ -1,0 +1,44 @@
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+
+#ifndef __compress_h__
+#define __compress_h__
+
+#include "io/file_io.h"
+#include "data_structures/tree.h"
+#include "data_structures/node.h"
+
+/* High-level entry point (existing) */
+int compress_file(const char* input_file, const char* output_file);
+
+/* --- Internal helpers (new stubs) --- */
+
+/* Write the Huffman tree metadata to the output file so it can be reconstructed.
+ * Writes: number of symbols, then for each symbol: byte value + code length. */
+int write_header(fw_fd *output_fd, const unsigned int codes[256],
+                 const int code_lengths[256], int num_symbols, unsigned int file_size);
+
+/* Read the Huffman tree metadata from the input file and reconstruct `codes` / `code_lengths`.
+ * Returns number of symbols read, or -1 on error. */
+int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256], unsigned int *file_size_out);
+
+/* Compress the input data using the Huffman codes and write to output via bitstream writer.
+ * `codes` and `code_lengths` are arrays of size 256 indexed by byte value. */
+int compress_data(fr_fd *input_fd, fw_fd *output_fd,
+                  const unsigned int codes[256], const int code_lengths[256]);
+
+/* Decompress data from input bitstream using the Huffman tree and write to output file.
+ * Returns 0 on success, -1 on error. */
+int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root, unsigned int file_size);
+
+/* ==========================================================================
+ * Tree reconstruction
+ * ========================================================================== */
+
+/* Reconstruct a Huffman tree from codes and code_lengths read from the header.
+ * Returns pointer to root node, or NULL on error. */
+node* reconstruct_tree_from_codes(const unsigned int codes[256],
+                                   const int code_lengths[256],
+                                   int num_symbols);
+
+#endif
+

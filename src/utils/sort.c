@@ -1,26 +1,5 @@
-/*
- *      sort.h
- *
- *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
- *
- *      This program is free software: you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation, either version 3 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef __sort_h__
-#define __sort_h__
-
-#include "node.h"
+#include "utils/sort.h"
+#include "data_structures/node.h"
 
 void swap(node **heap, int count) {
 	node *tmp = heap[0];
@@ -68,13 +47,26 @@ void heapify(node **heap, int count, int root) {
 	}
 }
 
-void heapsort(node **heap) {
-	int i = 256;
+void heapsort(node **heap, int count) {
+	int i = count;
 	while (i > 0) {
-		heapify (heap, i, 0);
+		heapify(heap, i, 0);
 		swap(heap, i);
 		i--;
 	}
 }
 
-#endif
+/* Sort an array of node pointers by weight (ascending) */
+void sort_nodes_by_weight(node **nodes, int count) {
+	int i, j;
+	/* Simple insertion sort (sufficient for count <= 256) */
+	for (i = 1; i < count; i++) {
+		node *key = nodes[i];
+		j = i - 1;
+		while (j >= 0 && compare_nodes(nodes[j], key) == 1) {
+			nodes[j + 1] = nodes[j];
+			j--;
+		}
+		nodes[j + 1] = key;
+	}
+}

@@ -1,28 +1,28 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -I./include
-LDFLAGS =
+# Cross-platform build using CMake
+# This Makefile is a simple wrapper for CMake
 
-SRC_DIR = .
-INC_DIR = include
-BUILD_DIR = build
+.PHONY: all build clean test configure
 
-SOURCES = $(wildcard $(SRC_DIR)/*.c)
-OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
-TARGET = shi
+# Default target
+all: build
 
-all: $(BUILD_DIR) $(TARGET)
+# Build target
+build: configure
+	cmake --build build
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
+# Clean target
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	@if exist build rmdir /s /q build
 
-.PHONY: all clean
+# Test target
+test: build
 
+	cd build && ctest --output-on-failure
+
+# Run specific test
+test-%: build
+	cd build && ctest -R $*
+
+# Configure target
+configure:
+	cmake -B build -S . -G "MinGW Makefiles"
