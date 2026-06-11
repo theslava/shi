@@ -1,4 +1,24 @@
+/*
+ *      tree.c - Huffman tree construction using linked list approach
+ *
+ *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
+ *
+ *      This program is free software: you can redistribute it and/or modify
+ *      it under the terms of the GNU General Public License as published by
+ *      the Free Software Foundation, either version 3 of the License, or
+ *      (at your option) any later version.
+ *
+ *      This program is distributed in the hope that it will be useful,
+ *      but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *      GNU General Public License for more details.
+ *
+ *      You should have received a copy of the GNU General Public License
+ *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "data_structures/tree.h"
 #include "utils/metric.h"
@@ -6,156 +26,155 @@
 
 /* Tree creation / destruction */
 tree* new_tree(void) {
-	tree *ret = (tree*)malloc(sizeof(tree));
-	if (ret != NULL) {
-		ret->root = NULL;
-		/* Initialize all nodes in the array as empty */
-		for (int i = 0; i < 512; i++) {
-			ret->nodes[i].left = NULL;
-			ret->nodes[i].right = NULL;
-			ret->nodes[i].byte = -1;
-			ret->nodes[i].weight = 0;
-		}
-	}
-	return ret;
+    tree *ret = (tree*)malloc(sizeof(tree));
+    if (ret != NULL) {
+        ret->root = NULL;
+        /* Initialize all nodes in the array as empty */
+        for (int i = 0; i < 512; i++) {
+            ret->nodes[i].left = NULL;
+            ret->nodes[i].right = NULL;
+            ret->nodes[i].byte = -1;
+            ret->nodes[i].weight = 0;
+            ret->nodes[i].next = NULL;
+        }
+    }
+    return ret;
 }
 
 void delete_tree(tree *del) {
-	if (del != NULL) {
-		free(del);
-	}
+    if (del != NULL) {
+        free(del);
+    }
 }
 
-/* Insert a node into the tree's array and update root if needed */
-int tree_insert(tree *t, node *n) {
-	if (!t || !n) return -1;
+/*
+ * Insert a new node into a sorted linked list.
+ * The list is sorted in ascending order by weight.
+ * For nodes with equal weight, leaf nodes (byte >= 0) come before parent nodes (byte < 0).
+ *
+ * Returns the new head of the list.
+ */
+static node* insert_sorted(node *head, node *new_node) {
+    /* Empty list */
+    if (head == NULL) {
+        new_node->next = NULL;
+        return new_node;
+    }
 
-	/* Find empty slot in the nodes array */
-	for (int i = 0; i < 512; i++) {
-		if (t->nodes[i].byte == -1) {
-			/* Copy the node */
-			t->nodes[i] = *n;
+    /* If new node should come before head, insert at front */
+    /* Leaf nodes come before parent nodes of same weight */
+    int new_is_leaf = (new_node->byte >= 0);
+    int head_is_leaf = (head->byte >= 0);
 
-			/* If this is the root, set it */
-			if (!t->root) {
-				t->root = &(t->nodes[i]);
-			}
+    if (new_node->weight < head->weight ||
+        (new_node->weight == head->weight && new_is_leaf && !head_is_leaf)) {
+        new_node->next = head;
+        return new_node;
+    }
 
-			return 0;
-		}
-	}
+    /* Find the correct position */
+    node *current = head;
+    while (current->next != NULL) {
+        int next_is_leaf = (current->next->byte >= 0);
 
-	return -1; /* Tree is full */
+        if (new_node->weight < current->next->weight ||
+            (new_node->weight == current->next->weight && new_is_leaf && !next_is_leaf)) {
+            break;
+        }
+        current = current->next;
+    }
+
+    /* Insert after current */
+    new_node->next = current->next;
+    current->next = new_node;
+
+    return head;
 }
 
-tree *new_tree_from_metric(metric * met) {
-	if (!met) return NULL;
+/*
+ * Remove and return the first node from the list.
+ * Returns NULL if the list is empty.
+ */
+static node* pop_front(node **head) {
+    if (*head == NULL) {
+        return NULL;
+    }
+    node *first = *head;
+    *head = first->next;
+    first->next = NULL;
+    return first;
+}
 
-	int first_node = 0;
-	int last_node = 0;
-	int next_pnode = 256;
-	int i;
+tree *new_tree_from_metric(metric *met) {
+    if (!met) return NULL;
 
-	/* Count distinct symbols with non-zero frequency */
-	int num_distinct = 0;
-	for (i = 0; i < 256; i++) {
-		if (met->characters[i] > 0) {
-			num_distinct++;
-		}
-	}
+    /* Count distinct symbols with non-zero frequency */
+    int num_distinct = 0;
+    for (int i = 0; i < 256; i++) {
+        if (met->characters[i] > 0) {
+            num_distinct++;
+        }
+    }
 
-	/* Check if all frequencies are zero */
-	if (num_distinct == 0) {
-		/* Create a tree with a single null leaf node */
-		tree *ret = new_tree();
-		if (!ret) return NULL;
-		ret->nodes[0].left = NULL;
-		ret->nodes[0].right = NULL;
-		ret->nodes[0].byte = -1;
-		ret->nodes[0].weight = 0;
-		ret->root = &(ret->nodes[0]);
-		return ret;
-	}
+    /* Check if all frequencies are zero */
+    if (num_distinct == 0) {
+        /* Create a tree with a single null leaf node */
+        tree *ret = new_tree();
+        if (!ret) return NULL;
+        ret->nodes[0].left = NULL;
+        ret->nodes[0].right = NULL;
+        ret->nodes[0].byte = -1;
+        ret->nodes[0].weight = 0;
+        ret->root = &(ret->nodes[0]);
+        return ret;
+    }
 
-	tree * ret = new_tree();
-	if (!ret) return NULL;
+    tree *ret = new_tree();
+    if (!ret) return NULL;
 
-	node * node_index[512];
+    /* Step 1: Create leaf nodes and build sorted linked list */
+    node *list_head = NULL;
+    int leaf_count = 0;
 
-	/* Initialize leaf nodes ONLY for bytes with non-zero frequency */
-	for (i = 0; i < 256; i++) {
-		if (met->characters[i] > 0) {
-			ret->nodes[last_node].left = NULL;
-			ret->nodes[last_node].right = NULL;
-			ret->nodes[last_node].byte = i;
-			ret->nodes[last_node].weight = met->characters[i];
-			node_index[last_node] = &(ret->nodes[last_node]);
-			last_node++;
-		}
-	}
+    for (int i = 0; i < 256; i++) {
+        if (met->characters[i] > 0) {
+            ret->nodes[leaf_count].byte = i;
+            ret->nodes[leaf_count].weight = met->characters[i];
+            ret->nodes[leaf_count].left = NULL;
+            ret->nodes[leaf_count].right = NULL;
+            ret->nodes[leaf_count].next = NULL;
+            list_head = insert_sorted(list_head, &(ret->nodes[leaf_count]));
+            leaf_count++;
+        }
+    }
 
-	/* Sort the array by weight (ascending) */
-	sort_nodes_by_weight(node_index, last_node);
+    /* Step 2: Build the Huffman tree using the linked list */
+    int parent_count = leaf_count;
+    int next_pnode = leaf_count;
 
-	/* Handle single-symbol case: create a root with one child */
-	if (last_node == 1) {
-		node *root = &ret->nodes[next_pnode];
-		root->left = node_index[0];
-		root->right = NULL;
-		root->byte = -1;
-		root->weight = node_index[0]->weight;
-		ret->root = root;
-		return ret;
-	}
+    while (list_head != NULL && list_head->next != NULL) {
+        /* Pop the two smallest nodes */
+        node *left = pop_front(&list_head);
+        node *right = pop_front(&list_head);
 
-	/* Debug: print initial leaf nodes */
-	fprintf(stderr, "DEBUG tree: initial leaves: ");
-	for (i = 0; i < last_node; i++) {
-		fprintf(stderr, "%c(%llu) ", node_index[i]->byte >= 0 ? (char)node_index[i]->byte : '?',
-			(unsigned long long)node_index[i]->weight);
-	}
-	fprintf(stderr, "\n");
+        /* Create a parent node */
+        ret->nodes[next_pnode].byte = -1;
+        ret->nodes[next_pnode].weight = left->weight + right->weight;
+        ret->nodes[next_pnode].left = left;
+        ret->nodes[next_pnode].right = right;
+        ret->nodes[next_pnode].next = NULL;
 
-	/* While there are more than 1 nodes in the active set, combine the two smallest.
-	 * The active set is node_index[first_node .. last_node-1].
-	 * Its size is (last_node - first_node). We need at least 2 elements. */
-	while (last_node - first_node > 1) {
-		/* Create a parent node from the two smallest (at the front of the active set) */
-		ret->nodes[next_pnode].left = node_index[first_node];
-		ret->nodes[next_pnode].right = node_index[first_node + 1];
-		ret->nodes[next_pnode].weight = node_index[first_node]->weight + node_index[first_node + 1]->weight;
-		ret->nodes[next_pnode].byte = -1;
-		fprintf(stderr, "DEBUG tree: parent[%d] left=%c(%llu) right=%c(%llu) weight=%llu\n",
-			next_pnode,
-			node_index[first_node]->byte >= 0 ? (char)node_index[first_node]->byte : '?',
-			(unsigned long long)node_index[first_node]->weight,
-			node_index[first_node + 1]->byte >= 0 ? (char)node_index[first_node + 1]->byte : '?',
-			(unsigned long long)node_index[first_node + 1]->weight,
-			(unsigned long long)ret->nodes[next_pnode].weight);
-		first_node += 2; /* Consume the two nodes we just used */
+        /* Insert the parent back into the sorted list */
+        list_head = insert_sorted(list_head, &(ret->nodes[next_pnode]));
+        next_pnode++;
+    }
 
-		/* Insert the parent node into the sorted position within the active set.
-		 * The active set now spans node_index[first_node .. last_node-1],
-		 * and we need to insert the new parent while maintaining sort order. */
-		int insert_pos = first_node;
-		while (insert_pos < last_node && get_weight(node_index[insert_pos]) <= ret->nodes[next_pnode].weight) {
-			insert_pos++;
-		}
+    /* The remaining node is the root */
+    if (list_head != NULL) {
+        ret->root = list_head;
+    }
 
-		/* Shift elements to make room for the new parent.
-		 * We shift from the end of the active set (last_node - 1) down to insert_pos. */
-		for (int k = last_node - 1; k >= insert_pos; k--) {
-			node_index[k + 1] = node_index[k];
-		}
-		node_index[insert_pos] = &(ret->nodes[next_pnode]);
-		next_pnode++;
-		fprintf(stderr, "DEBUG tree: inserted parent[%d] at pos %d, active set size=%d\n",
-			next_pnode - 1, insert_pos, last_node - first_node + 1);
-	}
-
-	ret->root = node_index[first_node];
-	fprintf(stderr, "DEBUG tree: root=%p byte=%d\n", (void*)ret->root, ret->root->byte);
-	return ret;
+    return ret;
 }
 
 /* Free dynamically allocated nodes in the tree (not the static array) */
@@ -173,13 +192,10 @@ static void generate_codes_recursive(node *n, unsigned int current_code, int cur
 
     /* Leaf node: store the code */
     if (n->byte >= 0) {
-        fprintf(stderr, "DEBUG gen_codes: leaf byte=%c code=%u len=%d\n", (char)n->byte, current_code, current_length);
         codes[n->byte] = current_code;
         code_lengths[n->byte] = current_length;
         return;
     }
-
-    fprintf(stderr, "DEBUG gen_codes: internal byte=%d left=%p right=%p\n", n->byte, (void*)n->left, (void*)n->right);
 
     /* Traverse left: append 0 */
     generate_codes_recursive(n->left, (current_code << 1) | 0, current_length + 1, codes, code_lengths);

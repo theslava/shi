@@ -15,11 +15,11 @@ int compress_file(const char* input_file, const char* output_file);
 /* Write the Huffman tree metadata to the output file so it can be reconstructed.
  * Writes: number of symbols, then for each symbol: byte value + code length. */
 int write_header(fw_fd *output_fd, const unsigned int codes[256],
-                 const int code_lengths[256], int num_symbols);
+                 const int code_lengths[256], int num_symbols, unsigned int file_size);
 
 /* Read the Huffman tree metadata from the input file and reconstruct `codes` / `code_lengths`.
  * Returns number of symbols read, or -1 on error. */
-int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256]);
+int read_header(fr_fd *input_fd, unsigned int codes[256], int code_lengths[256], unsigned int *file_size_out);
 
 /* Compress the input data using the Huffman codes and write to output via bitstream writer.
  * `codes` and `code_lengths` are arrays of size 256 indexed by byte value. */
@@ -28,7 +28,7 @@ int compress_data(fr_fd *input_fd, fw_fd *output_fd,
 
 /* Decompress data from input bitstream using the Huffman tree and write to output file.
  * Returns 0 on success, -1 on error. */
-int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root);
+int decompress_data(fr_fd *input_fd, fw_fd *output_fd, node *tree_root, unsigned int file_size);
 
 /* ==========================================================================
  * Tree reconstruction

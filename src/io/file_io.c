@@ -71,6 +71,7 @@ int fr_read(fr_fd *fd) {
 void fr_rewind(fr_fd *fd) {
 	lseek(fd->file,0,SEEK_SET);
 	fd->pos = 0;
+	fd->inbuf = 0;
 	fd->eof_flag = 0;
 	return;
 }

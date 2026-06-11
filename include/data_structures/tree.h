@@ -36,7 +36,7 @@ tree* new_tree(void);
 void delete_tree(tree *del);
 
 /* Insert a node into the tree */
-int tree_insert(tree *t, node *n);
+static node* insert_sorted(node *head, node *new_node);
 
 tree *new_tree_from_metric(metric *met);
 
@@ -49,3 +49,4 @@ int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]);
 void free_tree_nodes(node *root);
 
 #endif
+

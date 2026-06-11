@@ -39,15 +39,6 @@ int compress_file(const char* input_file, const char* output_file) {
 
 	/* 2. Build the frequency metric from the input data */
 	metric *met = new_metric_from_file(input_fd);
-	fprintf(stderr, "DEBUG compress: metric built, distinct symbols: ");
-	int distinct = 0;
-	for (int i = 0; i < 256; i++) {
-		if (met->characters[i] > 0) {
-			fprintf(stderr, "%c:%d ", (char)i, met->characters[i]);
-			distinct++;
-		}
-	}
-	fprintf(stderr, "\ntotal distinct=%d\n", distinct);
 	if (!met) {
 		fprintf(stderr, "Error: Could not build metric from '%s'\n", input_file);
 		fr_done(input_fd);
@@ -67,10 +58,6 @@ int compress_file(const char* input_file, const char* output_file) {
 	unsigned int codes[256];
 	int code_lengths[256];
 	int num_symbols = generate_codes(t, codes, code_lengths);
-	fprintf(stderr, "DEBUG compress: num_symbols=%d\n", num_symbols);
-	for (int i = 0; i < 256; i++) {
-		if (code_lengths[i] > 0) fprintf(stderr, "DEBUG compress: symbol %c len=%u code=%u\n", (char)i, code_lengths[i], codes[i]);
-	}
 	if (num_symbols < 0) {
 		fprintf(stderr, "Error: Could not generate codes\n");
 		delete_tree(t);
@@ -89,8 +76,17 @@ int compress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 6. Write the header (metadata needed for decompression) */
-	if (write_header(output_fd, codes, code_lengths, num_symbols) != 0) {
+	/* 6. Get the original file size */
+	fr_rewind(input_fd);
+	unsigned int file_size = 0;
+	int ch;
+	while ((ch = fr_read(input_fd)) != EOF) {
+		file_size++;
+	}
+	fr_rewind(input_fd);
+
+	/* 7. Write the header (metadata needed for decompression) */
+	if (write_header(output_fd, codes, code_lengths, num_symbols, file_size) != 0) {
 		fprintf(stderr, "Error: Could not write header to '%s'\n", output_file);
 		fw_done(output_fd);
 		delete_tree(t);
@@ -137,7 +133,7 @@ int compress_file(const char* input_file, const char* output_file) {
 }
 
 int write_header(fw_fd *output_fd, const unsigned int codes[256],
-                 const int code_lengths[256], int num_symbols) {
+                 const int code_lengths[256], int num_symbols, unsigned int file_size) {
 	if (!output_fd || !codes || !code_lengths) return -1;
 	if (num_symbols < 0) return -1;
 
@@ -151,14 +147,33 @@ int write_header(fw_fd *output_fd, const unsigned int codes[256],
 		return -1;
 	}
 
-	/* For each symbol with non-zero code length, write byte value + code length */
+	/* Write original file size as 4-byte little-endian integer */
+	unsigned char size_bytes[4];
+	size_bytes[0] = (unsigned char)(file_size & 0xFF);
+	size_bytes[1] = (unsigned char)((file_size >> 8) & 0xFF);
+	size_bytes[2] = (unsigned char)((file_size >> 16) & 0xFF);
+	size_bytes[3] = (unsigned char)((file_size >> 24) & 0xFF);
+	if (fw_write_bytes(output_fd, size_bytes, 4) != 0) {
+		return -1;
+	}
+
+	/* For each symbol with non-zero code length, write byte value + code length + code value */
 	unsigned char symbol_data[2];
+	unsigned char code_bytes[4];
 	int count = 0;
 	for (int i = 0; i < 256 && count < num_symbols; i++) {
 		if (code_lengths[i] > 0) {
 			symbol_data[0] = (unsigned char)i;
 			symbol_data[1] = (unsigned char)code_lengths[i];
 			if (fw_write_bytes(output_fd, symbol_data, 2) != 0) {
+				return -1;
+			}
+			/* Write the actual code value as 4-byte LE */
+			code_bytes[0] = (unsigned char)(codes[i] & 0xFF);
+			code_bytes[1] = (unsigned char)((codes[i] >> 8) & 0xFF);
+			code_bytes[2] = (unsigned char)((codes[i] >> 16) & 0xFF);
+			code_bytes[3] = (unsigned char)((codes[i] >> 24) & 0xFF);
+			if (fw_write_bytes(output_fd, code_bytes, 4) != 0) {
 				return -1;
 			}
 			count++;

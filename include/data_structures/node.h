@@ -1,22 +1,3 @@
-/*
- *      node.h
- *
- *      Copyright 2007 Vyacheslav Goltser <slavikg@gmail.com>
- *
- *      This program is free software: you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation, either version 3 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef __node_h__
 #define __node_h__
 
@@ -30,6 +11,7 @@ typedef struct _node {
 	long long unsigned int weight;
 	struct _node *left;
 	struct _node *right;
+	struct _node *next;  /* Linked list pointer for tree construction */
 } node;
 
 /* Node creation / destruction */
