@@ -65,7 +65,7 @@ static int test_fw_write_multiple(void) {
     FILE *fp = fopen("test_fw_multi.tmp", "r");
     TEST_ASSERT(fp != NULL, "file was created");
 
-    int i = 0;
+    size_t i = 0;
     int byte;
     while ((byte = fgetc(fp)) != EOF) {
         TEST_ASSERT(byte == content[i], "byte matches");

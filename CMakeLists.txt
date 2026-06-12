@@ -52,6 +52,7 @@ set(TEST_SOURCES
 # Define test executables and their dependencies
 add_executable(test_bitstream
     tests/test_bitstream.c
+    tests/test_helpers.c
     src/io/file_io.c
     src/data_structures/bitstream.c
 )
@@ -60,6 +61,7 @@ add_test(NAME test_bitstream COMMAND test_bitstream)
 
 add_executable(test_compress
     tests/test_compress.c
+    tests/test_helpers.c
     src/core/compress.c
     src/core/decompress.c
     src/io/file_io.c
@@ -76,6 +78,7 @@ add_test(NAME test_compress COMMAND test_compress)
 
 add_executable(test_file_reader
     tests/test_file_reader.c
+    tests/test_helpers.c
     src/io/file_io.c
 )
 target_include_directories(test_file_reader PRIVATE ${CMAKE_SOURCE_DIR}/tests)
@@ -83,6 +86,7 @@ add_test(NAME test_file_reader COMMAND test_file_reader)
 
 add_executable(test_file_writer
     tests/test_file_writer.c
+    tests/test_helpers.c
     src/io/file_io.c
 )
 target_include_directories(test_file_writer PRIVATE ${CMAKE_SOURCE_DIR}/tests)
@@ -90,6 +94,7 @@ add_test(NAME test_file_writer COMMAND test_file_writer)
 
 add_executable(test_list
     tests/test_list.c
+    tests/test_helpers.c
     src/data_structures/list.c
     src/data_structures/node.c
 )
@@ -98,6 +103,7 @@ add_test(NAME test_list COMMAND test_list)
 
 add_executable(test_tree
     tests/test_tree.c
+    tests/test_helpers.c
     src/data_structures/tree.c
     src/data_structures/node.c
     src/utils/sort.c
@@ -109,6 +115,7 @@ add_test(NAME test_tree COMMAND test_tree)
 
 add_executable(test_utils
     tests/test_utils.c
+    tests/test_helpers.c
     src/utils/metric.c
     src/utils/sort.c
     src/data_structures/node.c
