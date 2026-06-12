@@ -54,7 +54,7 @@ void delete_tree(tree *del) {
  *
  * Returns the new head of the list.
  */
-static node* insert_sorted(node *head, node *new_node) {
+node* insert_sorted(node *head, node *new_node) {
     /* Empty list */
     if (head == NULL) {
         new_node->next = NULL;
@@ -149,7 +149,6 @@ tree *new_tree_from_metric(metric *met) {
     }
 
     /* Step 2: Build the Huffman tree using the linked list */
-    int parent_count = leaf_count;
     int next_pnode = leaf_count;
 
     while (list_head != NULL && list_head->next != NULL) {

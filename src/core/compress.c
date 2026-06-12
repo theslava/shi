@@ -76,7 +76,18 @@ int compress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 6. Get the original file size */
+	/* 6. Write magic bytes "SHI\x00" */
+	const unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+	if (fw_write_bytes(output_fd, magic, 4) != 0) {
+		fprintf(stderr, "Error: Could not write magic bytes to '%s'\n", output_file);
+		fw_done(output_fd);
+		delete_tree(t);
+		delete_metric(met);
+		fr_done(input_fd);
+		return -1;
+	}
+
+	/* 7. Get the original file size */
 	fr_rewind(input_fd);
 	unsigned int file_size = 0;
 	int ch;
@@ -85,7 +96,7 @@ int compress_file(const char* input_file, const char* output_file) {
 	}
 	fr_rewind(input_fd);
 
-	/* 7. Write the header (metadata needed for decompression) */
+	/* 8. Write the header (metadata needed for decompression) */
 	if (write_header(output_fd, codes, code_lengths, num_symbols, file_size) != 0) {
 		fprintf(stderr, "Error: Could not write header to '%s'\n", output_file);
 		fw_done(output_fd);

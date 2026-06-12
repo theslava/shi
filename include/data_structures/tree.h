@@ -36,7 +36,7 @@ tree* new_tree(void);
 void delete_tree(tree *del);
 
 /* Insert a node into the tree */
-static node* insert_sorted(node *head, node *new_node);
+node* insert_sorted(node *head, node *new_node);
 
 tree *new_tree_from_metric(metric *met);
 

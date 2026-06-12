@@ -40,7 +40,24 @@ int decompress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 2. Read the header to get codes, code_lengths, and file_size */
+	/* 2. Verify magic bytes */
+	unsigned char magic[4];
+	for (int i = 0; i < 4; i++) {
+		int b = fr_read(input_fd);
+		if (b == EOF) {
+			fprintf(stderr, "Error: Could not read magic bytes from '%s'\n", input_file);
+			fr_done(input_fd);
+			return -1;
+		}
+		magic[i] = (unsigned char)b;
+	}
+	if (magic[0] != 0x53 || magic[1] != 0x48 || magic[2] != 0x49 || magic[3] != 0x00) {
+		fprintf(stderr, "Error: Invalid file format - bad magic bytes in '%s'\n", input_file);
+		fr_done(input_fd);
+		return -1;
+	}
+
+	/* 3. Read the header to get codes, code_lengths, and file_size */
 	unsigned int codes[256];
 	int code_lengths[256];
 	unsigned int file_size = 0;
@@ -66,7 +83,7 @@ int decompress_file(const char* input_file, const char* output_file) {
 		return 0;
 	}
 
-	/* 3. Reconstruct the Huffman tree from the codes */
+	/* 4. Reconstruct the Huffman tree from the codes */
 	node *root = reconstruct_tree_from_codes(codes, code_lengths, num_symbols);
 	if (!root) {
 		fprintf(stderr, "Error: Could not reconstruct Huffman tree\n");
@@ -74,7 +91,7 @@ int decompress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 4. Open the output file for writing */
+	/* 5. Open the output file for writing */
 	fw_fd *output_fd = fw_new(output_file, 4096);
 	if (!output_fd) {
 		fprintf(stderr, "Error: Could not create output file '%s'\n", output_file);
@@ -83,7 +100,7 @@ int decompress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 5. Decompress the data */
+	/* 6. Decompress the data */
 	if (decompress_data(input_fd, output_fd, root, file_size) != 0) {
 		fprintf(stderr, "Error: Decompression failed\n");
 		fw_done(output_fd);
@@ -92,11 +109,11 @@ int decompress_file(const char* input_file, const char* output_file) {
 		return -1;
 	}
 
-	/* 6. Flush and close the output file */
+	/* 7. Flush and close the output file */
 	fw_flush(output_fd);
 	fw_done(output_fd);
 
-	/* 7. Clean up */
+	/* 8. Clean up */
 	free_tree_nodes(root);
 	fr_done(input_fd);
 

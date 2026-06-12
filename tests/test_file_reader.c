@@ -58,7 +58,7 @@ static int test_fr_read_all(void) {
     fr_fd *fd = fr_new("test_fr_all.tmp", 64);
     TEST_ASSERT(fd != NULL, "fr_new returns non-NULL");
 
-    int i = 0;
+    size_t i = 0;
     int byte;
     while ((byte = fr_read(fd)) != EOF) {
         TEST_ASSERT(byte == content[i], "byte matches");
