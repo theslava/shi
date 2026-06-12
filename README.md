@@ -173,7 +173,7 @@ tests/
 └── test_helpers.h      — temp files, comparison, macros
 
 docs/
-└── Plan.md             — detailed project plan
+
 
 Makefile                — CMake wrapper
 CMakeLists.txt          — primary build system

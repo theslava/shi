@@ -1,16 +1,44 @@
 # Build directory
 build/
 
-# Executable
+# Executables
 shi
+shi.exe
 *.exe
 
-# Object files in root (if any)
+# Object files
 *.o
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+CPackConfig.cmake
+CPackSourceConfig.cmake
+cmake-build-*/
+
+# Test artifacts
+tests/test_*.tmp
+tests/build/
+
+# IDE / editor
+.clangd
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # MCP shell logs
 mcp-shell.log
 
-compile_commands.json
+# OS files
+.DS_Store
+Thumbs.db
+*.lnk
 
-*.tmp
+# MCP / AI tooling
+.cgcignore
+.continue/
