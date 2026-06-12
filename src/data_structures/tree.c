@@ -26,7 +26,7 @@
 
 /* Tree creation / destruction */
 tree* new_tree(void) {
-    tree *ret = (tree*)malloc(sizeof(tree));
+    tree* ret = (tree*)malloc(sizeof(tree));
     if (ret != NULL) {
         ret->root = NULL;
         /* Initialize all nodes in the array as empty */
@@ -41,7 +41,7 @@ tree* new_tree(void) {
     return ret;
 }
 
-void delete_tree(tree *del) {
+void delete_tree(tree* del) {
     if (del != NULL) {
         free(del);
     }
@@ -54,7 +54,7 @@ void delete_tree(tree *del) {
  *
  * Returns the new head of the list.
  */
-node* insert_sorted(node *head, node *new_node) {
+node* insert_sorted(node* head, node* new_node) {
     /* Empty list */
     if (head == NULL) {
         new_node->next = NULL;
@@ -73,7 +73,7 @@ node* insert_sorted(node *head, node *new_node) {
     }
 
     /* Find the correct position */
-    node *current = head;
+    node* current = head;
     while (current->next != NULL) {
         int next_is_leaf = (current->next->byte >= 0);
 
@@ -95,18 +95,19 @@ node* insert_sorted(node *head, node *new_node) {
  * Remove and return the first node from the list.
  * Returns NULL if the list is empty.
  */
-static node* pop_front(node **head) {
+static node* pop_front(node** head) {
     if (*head == NULL) {
         return NULL;
     }
-    node *first = *head;
+    node* first = *head;
     *head = first->next;
     first->next = NULL;
     return first;
 }
 
-tree *new_tree_from_metric(metric *met) {
-    if (!met) return NULL;
+tree* new_tree_from_metric(metric* met) {
+    if (!met)
+        return NULL;
 
     /* Count distinct symbols with non-zero frequency */
     int num_distinct = 0;
@@ -119,8 +120,9 @@ tree *new_tree_from_metric(metric *met) {
     /* Check if all frequencies are zero */
     if (num_distinct == 0) {
         /* Create a tree with a single null leaf node */
-        tree *ret = new_tree();
-        if (!ret) return NULL;
+        tree* ret = new_tree();
+        if (!ret)
+            return NULL;
         ret->nodes[0].left = NULL;
         ret->nodes[0].right = NULL;
         ret->nodes[0].byte = -1;
@@ -129,11 +131,12 @@ tree *new_tree_from_metric(metric *met) {
         return ret;
     }
 
-    tree *ret = new_tree();
-    if (!ret) return NULL;
+    tree* ret = new_tree();
+    if (!ret)
+        return NULL;
 
     /* Step 1: Create leaf nodes and build sorted linked list */
-    node *list_head = NULL;
+    node* list_head = NULL;
     int leaf_count = 0;
 
     for (int i = 0; i < 256; i++) {
@@ -153,8 +156,8 @@ tree *new_tree_from_metric(metric *met) {
 
     while (list_head != NULL && list_head->next != NULL) {
         /* Pop the two smallest nodes */
-        node *left = pop_front(&list_head);
-        node *right = pop_front(&list_head);
+        node* left = pop_front(&list_head);
+        node* right = pop_front(&list_head);
 
         /* Create a parent node */
         ret->nodes[next_pnode].byte = -1;
@@ -177,17 +180,22 @@ tree *new_tree_from_metric(metric *met) {
 }
 
 /* Free dynamically allocated nodes in the tree (not the static array) */
-void free_tree_nodes(node *root) {
-    if (root == NULL) return;
+void free_tree_nodes(node* root) {
+    if (root == NULL)
+        return;
     free_tree_nodes(root->left);
     free_tree_nodes(root->right);
     /* All nodes are stored in the tree's static array, so nothing to free here. */
 }
 
 /* Helper: recursive DFS to generate Huffman codes */
-static void generate_codes_recursive(node *n, unsigned int current_code, int current_length,
-                                     unsigned int codes[256], int code_lengths[256]) {
-    if (n == NULL) return;
+static void generate_codes_recursive(node* n,
+                                     unsigned int current_code,
+                                     int current_length,
+                                     unsigned int codes[256],
+                                     int code_lengths[256]) {
+    if (n == NULL)
+        return;
 
     /* Leaf node: store the code */
     if (n->byte >= 0) {
@@ -197,13 +205,16 @@ static void generate_codes_recursive(node *n, unsigned int current_code, int cur
     }
 
     /* Traverse left: append 0 */
-    generate_codes_recursive(n->left, (current_code << 1) | 0, current_length + 1, codes, code_lengths);
+    generate_codes_recursive(n->left, (current_code << 1) | 0, current_length + 1, codes,
+                             code_lengths);
     /* Traverse right: append 1 */
-    generate_codes_recursive(n->right, (current_code << 1) | 1, current_length + 1, codes, code_lengths);
+    generate_codes_recursive(n->right, (current_code << 1) | 1, current_length + 1, codes,
+                             code_lengths);
 }
 
-int generate_codes(tree *t, unsigned int codes[256], int code_lengths[256]) {
-    if (!t || !t->root) return 0;
+int generate_codes(tree* t, unsigned int codes[256], int code_lengths[256]) {
+    if (!t || !t->root)
+        return 0;
 
     /* Initialize arrays */
     for (int i = 0; i < 256; i++) {

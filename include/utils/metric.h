@@ -24,12 +24,11 @@
 #include "io/file_io.h"
 
 typedef struct _metric {
-	long long unsigned int characters[256];
+    long long unsigned int characters[256];
 } metric;
 
-metric * new_metric();
-metric * new_metric_from_file(fr_fd *file);
-void fill_metric(metric* met, fr_fd *file);
-void delete_metric (metric* met);
+metric* new_metric();
+metric* new_metric_from_file(fr_fd* file);
+void fill_metric(metric* met, fr_fd* file);
+void delete_metric(metric* met);
 #endif
-

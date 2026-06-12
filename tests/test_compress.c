@@ -15,9 +15,9 @@
 static int test_compress_roundtrip(void) {
     TEST_START("compress -> decompress roundtrip");
 
-    const char *input = "test_compress_input.txt";
-    const char *compressed = "test_compress_output.txt";
-    const char *decompressed = "test_compress_restored.txt";
+    const char* input = "test_compress_input.txt";
+    const char* compressed = "test_compress_output.txt";
+    const char* decompressed = "test_compress_restored.txt";
 
     /* Create input file */
     create_temp_file(input, "Hello, world! This is a test for compression.");
@@ -46,9 +46,9 @@ static int test_compress_roundtrip(void) {
 static int test_compress_empty(void) {
     TEST_START("compress empty file");
 
-    const char *input = "test_empty.txt";
-    const char *compressed = "test_empty_compressed.txt";
-    const char *decompressed = "test_empty_decompressed.txt";
+    const char* input = "test_empty.txt";
+    const char* compressed = "test_empty_compressed.txt";
+    const char* decompressed = "test_empty_decompressed.txt";
 
     create_temp_file(input, "");
 
@@ -72,12 +72,12 @@ static int test_compress_empty(void) {
 static int test_compress_repeated(void) {
     TEST_START("compress repeated content");
 
-    const char *input = "test_repeated.txt";
-    const char *compressed = "test_repeated_compressed.txt";
-    const char *decompressed = "test_repeated_decompressed.txt";
+    const char* input = "test_repeated.txt";
+    const char* compressed = "test_repeated_compressed.txt";
+    const char* decompressed = "test_repeated_decompressed.txt";
 
     /* Create a highly repetitive file */
-    FILE *fp = fopen(input, "w");
+    FILE* fp = fopen(input, "w");
     if (fp) {
         for (int i = 0; i < 100; i++) {
             fprintf(fp, "AAAA");

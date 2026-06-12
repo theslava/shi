@@ -44,16 +44,12 @@ int main(int argc, char* argv[]) {
         printf("Compressing '%s' to '%s'\n", input_file, output_file);
         compress_file(input_file, output_file);
         return EXIT_SUCCESS;
-    }
-    else if (strcmp(command, "decompress") == 0) {
+    } else if (strcmp(command, "decompress") == 0) {
         printf("Decompressing '%s' to '%s'\n", input_file, output_file);
         decompress_file(input_file, output_file);
         return EXIT_SUCCESS;
-    }
-    else {
+    } else {
         fprintf(stderr, "Error: Unknown command '%s'. Use 'compress' or 'decompress'.\n", command);
         return EXIT_FAILURE;
     }
 }
-
-
