@@ -1,6 +1,6 @@
 # Changelog
 
-## Phase 1 — Bug Fixes & Polish
+## Phase 1 — Bug Fixes & Polish (Completed)
 
 ### Completed Issues
 
@@ -49,3 +49,36 @@
 ```
 [4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]
 ```
+
+---
+
+## Phase 2 — Edge Cases & Robustness (Current)
+
+### Phase 2.1 — Codebase Restructuring (Completed)
+
+**Changes Made:**
+
+| File | Change |
+|------|--------|
+| `build.ps1` | **Added** — PowerShell build script with build/test/clean/distclean targets, auto-detects CMake generator (Ninja → MSVC → MinGW) |
+| `CMakeLists.txt` | **Rewritten** — organized test executables, custom targets (`run-tests`, `run-test-*`, `clean-build`, `distclean`), proper cross-platform flags |
+| `Makefile` | **Rewritten** — cross-platform CMake wrapper with `configure`, `build`, `test`, `test-*`, `clean`, `distclean`, `help` targets |
+| `scripts/clean.ps1` | **Added** — PowerShell cleanup utility |
+| `include/` (all headers) | **Refactored** — consistent formatting, documented APIs, unified naming conventions |
+| `src/` (all sources) | **Refactored** — consistent formatting, improved types, better error handling, clearer API design |
+| `tests/` (all tests) | **Refactored** — improved test helpers, better assertions, consistent structure |
+| `README.md` | **Updated** — build instructions, test runner references, documentation |
+| `debug_test.c` | **Removed** — legacy debug file |
+| `run_tests.ps1` | **Removed** — replaced by `build.ps1 test` |
+| `scripts/build.sh` | **Removed** — replaced by `build.ps1` / `Makefile` |
+| `scripts/clean.sh` | **Removed** — replaced by `build.ps1 clean` / `make clean` |
+| `tests/CTestConfig.cmake` | **Removed** — unused |
+| `tests/CTestCustom.cmake` | **Removed** — unused |
+| `tests/run_tests.ps1` | **Removed** — replaced by `build.ps1 test` |
+| `tests/run_tests.sh` | **Removed** — replaced by `Makefile test` |
+
+**Test Results After Restructuring:**
+- ✅ All 7 test suites passing
+- ✅ Build compiles with zero errors
+- ✅ Cross-platform build scripts (PowerShell + Makefile)
+- ✅ `--verbose` flag support via `VERBOSE=1` (Makefile) / `-ShowVerbose` (PowerShell)
