@@ -32,14 +32,14 @@ This section describes the planned changes for v1.0, which replaces the current 
 ### 6.1 New File Header Format (Version 0x01)
 
 ```
-[magic: 4B \"SHI<version>\"]
+[magic: 4B "SHI<version>"]
 [num_nodes: 4B LE]
 [bit-packed node stream]
 ```
 
 | Field | Size | Description |
 |-------|------|-------------|
-| **Magic** | 4B | `\"SHI<version>\"` — First 3 bytes `\"SHI\"` are immutable. 4th byte is the file format version. For v1.0, magic is `\"SHI\\x01\"` (`0x53, 0x48, 0x49, 0x01`). |
+| **Magic** | 4B | `"SHI<version>"` — First 3 bytes `"SHI"` are immutable. 4th byte is the file format version. For v1.0, magic is `"SHI\x01"` (`0x53, 0x48, 0x49, 0x01`). |
 | **num_nodes** | 4B LE | Count of nodes in the flat array. |
 | **Node stream** | Variable | Bit-packed 19-bit nodes, MSB-first. |
 
@@ -86,14 +86,14 @@ Each node is packed as:
 ### 6.4 Updated Functions
 
 #### `write_header()` in `src/core/compress.c`
-- Write magic bytes `\"SHI\\x01\"` (4B)
+- Write magic bytes `"SHI\x01"` (4B)
 - Write `num_nodes` (4B LE)
 - Call `serialize_tree_to_bitstream(tree, &bsw)`
 - Flush the bitstream to the file writer
 
 #### `read_header()` in `src/core/decompress.c`
-- Read magic bytes `\"SHI<version>\"` and validate:
-  - First 3 bytes must be `\"SHI\"`
+- Read magic bytes `"SHI<version>"` and validate:
+  - First 3 bytes must be `"SHI"`
   - 4th byte must be `0x01` (for v1.0)
 - Call `deserialize_tree_from_bitstream(bs, &out_nodes, &out_count)`
 - Store flat array and `num_nodes` in the decompressor state

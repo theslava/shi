@@ -76,7 +76,7 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
   - Supports optional `<component>` argument: `.\\run_tests.ps1 bitstream`, `.\\run_tests ps1 compress`, etc.
   - Supports `-Help` flag for usage information
   - Root `run_tests.ps1` acts as a wrapper that delegates to `tests/run_tests.ps1`
-  - Components: `bitstream`, `compress`, `file_reader`, `file_writer`, `file_io`, `list`, `tree`, `utils`, `all`"
+  - Components: `bitstream`, `compress`, `file_reader`, `file_writer`, `file_io`, `list`, `tree`, `utils`, `all`
 
 ### Test Files
 
@@ -114,7 +114,6 @@ All core Huffman compression/decompression functionality is implemented and func
 
 | Issue | File | Description |
 |-------|------|-------------|
-
 | ~~`ba_write_to_file()` is a stub~~ | `src/data_structures/bitarray.c` | ~~Returns -1; needs implementation~~ ✅ **Implemented** — changed signature from `fr_fd *` to `fw_fd *`, implemented bit-to-byte packing |
 | ~~`delete_node()` has formatting issue~~ | `src/data_structures/node.c` | ~~Missing closing brace indentation~~ ✅ **Fixed** — proper indentation added |
 | ~~`test_tree.c` has commented-out test~~ | `tests/test_tree.c` | ~~`test_tree_insert()` and `test_tree_build()` assertions are incomplete~~ ✅ **Fixed** — `test_tree_build()` now properly calls `new_tree_from_metric()` |
@@ -147,7 +146,7 @@ All core Huffman compression/decompression functionality is implemented and func
 **Remaining Issues:**
 - ~~`test_tree` segfault~~ — ✅ **Fixed** — buffer overflow in `new_tree_from_metric`: `node_index` array was sized 256 but needed 512 to accommodate all nodes (256 leaves + 255 internal nodes). Changed `node * node_index[256]` to `node * node_index[512]`.
 - ~~`test_bitstream` failures~~ — ✅ **Fixed** — `bs_new` now loads the first byte from the file on initialization, `bs_eof` proactively checks for EOF by attempting to load the next byte and restoring state, `bsw_write_bit(NULL, ...)` now returns 0 (silently ignores NULL) to match the test's expectation.
-- ~~`test_compress` failures~~ — ✅ **Fixed** — Huffman code roundtrip bug fixed. See Phase 1.1 below for details."
+- ~~`test_compress` failures~~ — ✅ **Fixed** — Huffman code roundtrip bug fixed. See Phase 1.1 below for details.
 
 ### Phase 1.1 — Huffman Code Roundtrip Bug Fix
 
@@ -362,7 +361,7 @@ include/
 ├── utils/
 │   ├── metric.h        ✓ complete
 │   └── sort.h          ✓ complete
-
+```
 
 src/
 ├── core/
@@ -390,8 +389,6 @@ tests/
 ├── test_list.c         ✓ complete (5 tests)
 ├── test_tree.c         ✓ complete (3 tests, some commented out)
 └── test_utils.c        ✓ complete (2 tests, 1 commented out)
-
-
 
 docs/
 └── Plan.md             — this file
