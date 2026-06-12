@@ -10,8 +10,8 @@
 #include "test_helpers.h"
 
 /* Create a temporary file with given content */
-FILE *create_temp_file(const char *name, const char *content) {
-    FILE *fp = fopen(name, "w");
+FILE* create_temp_file(const char* name, const char* content) {
+    FILE* fp = fopen(name, "w");
     if (!fp) {
         fprintf(stderr, "Error: could not create temp file '%s'\n", name);
         return NULL;
@@ -22,13 +22,15 @@ FILE *create_temp_file(const char *name, const char *content) {
 }
 
 /* Compare two files for equality */
-int files_equal(const char *file1, const char *file2) {
-    FILE *f1 = fopen(file1, "r");
-    FILE *f2 = fopen(file2, "r");
+int files_equal(const char* file1, const char* file2) {
+    FILE* f1 = fopen(file1, "r");
+    FILE* f2 = fopen(file2, "r");
 
     if (!f1 || !f2) {
-        if (f1) fclose(f1);
-        if (f2) fclose(f2);
+        if (f1)
+            fclose(f1);
+        if (f2)
+            fclose(f2);
         return 0;
     }
 
@@ -44,7 +46,8 @@ int files_equal(const char *file1, const char *file2) {
             break;
         }
 
-        if (ch1 == EOF) break;
+        if (ch1 == EOF)
+            break;
     }
 
     fclose(f1);

@@ -14,7 +14,7 @@ int decompress_file(const char* input_file, const char* output_file);
 /* Reconstruct a Huffman tree from codes and code_lengths read from the header.
  * Returns pointer to root node, or NULL on error. */
 node* reconstruct_tree_from_codes(const unsigned int codes[256],
-                                   const int code_lengths[256],
-                                   int num_symbols);
+                                  const int code_lengths[256],
+                                  int num_symbols);
 
 #endif

@@ -14,7 +14,7 @@
 static int test_fw_new(void) {
     TEST_START("fw_new / fw_done");
 
-    fw_fd *fd = fw_new("test_fw.tmp", 4096);
+    fw_fd* fd = fw_new("test_fw.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     fw_done(fd);
@@ -28,14 +28,14 @@ static int test_fw_new(void) {
 static int test_fw_write(void) {
     TEST_START("fw_write_byte");
 
-    fw_fd *fd = fw_new("test_fw_byte.tmp", 4096);
+    fw_fd* fd = fw_new("test_fw_byte.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     fw_write_byte(fd, 'X');
     fw_done(fd);
 
     /* Read back and verify */
-    FILE *fp = fopen("test_fw_byte.tmp", "r");
+    FILE* fp = fopen("test_fw_byte.tmp", "r");
     TEST_ASSERT(fp != NULL, "file was created");
 
     int byte = fgetc(fp);
@@ -52,8 +52,8 @@ static int test_fw_write(void) {
 static int test_fw_write_multiple(void) {
     TEST_START("fw_write_byte multiple");
 
-    const char *content = "Test!";
-    fw_fd *fd = fw_new("test_fw_multi.tmp", 4096);
+    const char* content = "Test!";
+    fw_fd* fd = fw_new("test_fw_multi.tmp", 4096);
     TEST_ASSERT(fd != NULL, "fw_new returns non-NULL");
 
     for (int i = 0; content[i]; i++) {
@@ -62,7 +62,7 @@ static int test_fw_write_multiple(void) {
     fw_done(fd);
 
     /* Read back and verify */
-    FILE *fp = fopen("test_fw_multi.tmp", "r");
+    FILE* fp = fopen("test_fw_multi.tmp", "r");
     TEST_ASSERT(fp != NULL, "file was created");
 
     size_t i = 0;
@@ -84,7 +84,7 @@ static int test_fw_write_multiple(void) {
 static int test_fw_null(void) {
     TEST_START("NULL pointer handling");
 
-    fw_done(NULL);  /* Should not crash */
+    fw_done(NULL); /* Should not crash */
 
     TEST_END;
     return 0;
