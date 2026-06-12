@@ -43,6 +43,7 @@ Compressed input → read header → reconstruct tree → bitstream decode → O
 
 The compressed file header stores:
 
+- Magic bytes: `"SHI\x00"` (4B, `0x53, 0x48, 0x49, 0x00`)
 - `num_symbols` (4B LE) — number of unique bytes in the original
 - `file_size` (4B LE) — original file size (to stop decoding at the right point)
 - Per symbol: `byte_value` (1B) + `code_length` (1B) + `code_value` (4B LE)
@@ -50,10 +51,10 @@ The compressed file header stores:
 ## Tools Used
 
 - **Language**: C99
-- **Build System**: CMake (primary) with a cross-platform Makefile wrapper
+- **Build System**: CMake (primary) with cross-platform wrappers
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
 - **Testing**: Custom test suite (7 test executables, 20+ test cases)
-- **Test Runners**: `run_tests.sh` (Unix/macOS), `run_tests.ps1` (Windows)
+- **Test Runners**: `build.ps1` (Windows), `make test` (Unix/macOS)
 
 ## Build Instructions
 
@@ -61,31 +62,63 @@ The compressed file header stores:
 
 - CMake ≥ 3.15
 - A C compiler (GCC, Clang, or MSVC)
+- Ninja (optional, auto-detected for faster builds)
 
 ### Build
 
-```bash
-# Using the Makefile wrapper (recommended, cross-platform)
-make
+```powershell
+# Windows (PowerShell)
+.\build.ps1
 
-# Or directly with CMake
+# Or using CMake directly
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
+
+# Unix/macOS (Makefile)
+make
 ```
 
-The main executable `shi` will be built in the build directory (or current directory depending on your CMake generator).
+The main executable `shi` will be built in the `build` directory (or current directory depending on your CMake generator).
+
+### Build Options
+
+```powershell
+# Verbose build (show full compiler commands)
+.\build.ps1 build -ShowVerbose
+
+# Release build
+.\build.ps1 build -BuildType Release
+
+# Show help
+.\build.ps1 help
+```
+
+```bash
+# Verbose build (show full compiler commands)
+make build VERBOSE=1
+
+# Release build
+make build BUILD_TYPE=Release
+```
 
 ### Running Tests
 
+```powershell
+# Windows
+.\build.ps1 test
+
+# Run a specific test
+.\build.ps1 test bitstream    # test_bitstream
+.\build.ps1 test compress     # test_compress
+```
+
 ```bash
 # Unix/macOS
-./run_tests.sh
+make test
 
-# Windows (PowerShell)
-.\run_tests.ps1
-
-# Run tests for a specific component
-.\run_tests.ps1 bitstream    # Windows only
+# Run a specific test
+make test-bitstream
+make test-compress
 ```
 
 ## Usage
@@ -109,15 +142,15 @@ The main executable `shi` will be built in the build directory (or current direc
 - ✅ Full compression pipeline (`compress_file()`)
 - ✅ Full decompression pipeline (`decompress_file()`)
 - ✅ Error handling with NULL checks and status codes throughout
-- ✅ All 7 test suites passing
-- ✅ Cross-platform build system (CMake + Makefile wrapper)
+- ✅ All 7 test suites passing (100%)
+- ✅ Cross-platform build system (CMake + PowerShell + Makefile)
+- ✅ Magic byte validation on decompression
 
 ### Known Limitations
 
 - Single-symbol edge case is handled but could be more robust
 - No `--verbose` / progress output option yet
 - Entire file is loaded into memory for frequency analysis (fine for the 256-byte alphabet)
-- `bitarray.c`'s `ba_write_to_file()` was historically a stub (now implemented)
 
 ### Future Enhancements (v2+)
 
@@ -128,7 +161,7 @@ The main executable `shi` will be built in the build directory (or current direc
 
 ## File Index
 
-```text
+```
 include/
 ├── core/
 │   ├── compress.h      — compress_file, write_header, compress_data, read_header, etc.
@@ -173,12 +206,14 @@ tests/
 └── test_helpers.h      — temp files, comparison, macros
 
 docs/
+├── Architecture.md     — module responsibilities, data flow, design decisions
+├── Changelog.md        — history of bug fixes and changes
+└── Roadmap.md          — phased work items and future plans
 
-
-Makefile                — CMake wrapper
+build.ps1               — PowerShell build/test/clean script
+Makefile                — CMake wrapper (Unix/macOS)
 CMakeLists.txt          — primary build system
-run_tests.sh            — Unix/macOS test runner
-run_tests.ps1           — Windows PowerShell test runner
+scripts/clean.ps1       — PowerShell cleanup utility
 ```
 
 ## License

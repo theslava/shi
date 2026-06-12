@@ -4,29 +4,33 @@
 
 | Module | Responsibility |
 |--------|---------------|
-| `file_io.c / file_io.h` | Low-level buffered I/O (read + write) |
-| `metric.c` | Count byte frequencies from input data |
-| `node.c` | Huffman tree node struct & helpers |
-| `sort.c` | Heap-based sorting of nodes by weight |
-| `list.c` | Doubly-linked sorted list for building the tree |
-| `tree.c` | Build Huffman tree from frequency metric; generate codes |
-| `bitstream.c` | Bit-level reader + writer (MSB-first) |
-| `bitarray.c` | Bit array operations + `ba_write_to_file()` |
-| `compress.c` | High-level compression pipeline |
-| `decompress.c` | High-level decompression pipeline |
+| `file_io.c / file_io.h` | Buffered file reader (`fr_fd`) and writer (`fw_fd`) with configurable buffer sizes |
+| `metric.c / metric.h` | Count byte frequencies from input data |
+| `node.c / node.h` | Huffman tree node struct (`byte`, `weight`, `left`, `right`, `next`) and helpers |
+| `sort.c / sort.h` | Heapsort helpers for ordering nodes by weight; `sort_nodes_by_weight()` wrapper |
+| `list.c / list.h` | Doubly-linked sorted list for building the tree |
+| `tree.c / tree.h` | Build Huffman tree from frequency metric; `generate_codes()` traversal |
+| `bitstream.c / bitstream.h` | Bit-level reader (`bitstream`) + writer (`bitstream_writer`), MSB-first |
+| `bitarray.c / bitarray.h` | Bit array operations + `ba_write_to_file()` (bit-to-byte packing) |
+| `compress.c / compress.h` | High-level compression pipeline: `compress_file()`, `write_header()`, `compress_data()` |
+| `decompress.c / decompress.h` | High-level decompression pipeline: `decompress_file()`, `read_header()`, `reconstruct_tree_from_codes()`, `decompress_data()` |
 
 ## Data Flow
 
 ### Compression
+
 ```
 Input file → fr_new() → metric (frequency counts)
            → sort nodes → build Huffman tree → generate_codes()
-           → write_header() + compress_data() via bitstream writer → Output file
+           → write_header() [magic + num_symbols + file_size + per-symbol codes]
+           → compress_data() via bitstream writer → Output file
 ```
 
 ### Decompression
+
 ```
-Compressed input → read_header() → reconstruct_tree_from_codes()
+Compressed input → read_header() [magic + num_symbols + file_size + per-symbol codes]
+                 → reconstruct_tree_from_codes()
                  → decompress_data() via bitstream reader → fw_write_byte() → Output file
 ```
 
@@ -36,8 +40,9 @@ Compressed input → read_header() → reconstruct_tree_from_codes()
 2. **Buffered I/O**: Both reader and writer use a configurable buffer size (default 4096) to minimize system calls.
 3. **Static node array in tree**: `tree->nodes[512]` is allocated as part of the `tree` struct.
 4. **Header format**: `[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]`.
-5. **Error handling**: Every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error).
-6. **Cross-platform compatibility**: Build system uses CMake with MinGW Makefiles on all platforms.
+5. **Magic bytes**: All `.huf` files start with `"SHI\x00"` (0x53, 0x48, 0x49, 0x00) for format identification.
+6. **Error handling**: Every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error).
+7. **Cross-platform compatibility**: Build system uses CMake with auto-detected generator (Ninja → MSVC → MinGW Makefiles).
 
 ## File Index
 
@@ -54,16 +59,16 @@ include/
 │   └── tree.h          ✓ complete
 ├── io/
 │   └── file_io.h       ✓ complete (reader + writer)
-├── utils/
-│   ├── metric.h        ✓ complete
-│   └── sort.h          ✓ complete
+└── utils/
+    ├── metric.h        ✓ complete
+    └── sort.h          ✓ complete
 
 src/
 ├── core/
 │   ├── compress.c      ✓ complete
 │   └── decompress.c    ✓ complete
 ├── data_structures/
-│   ├── bitarray.c      ⚠️ partial
+│   ├── bitarray.c      ✓ complete
 │   ├── bitstream.c     ✓ complete
 │   ├── list.c          ✓ complete
 │   ├── node.c          ✓ complete
@@ -76,20 +81,21 @@ src/
     └── sort.c          ✓ complete
 
 tests/
-├── test_compress.c     ✓ complete
+├── test_compress.c     ✓ complete (3 tests: roundtrip, empty, repeated)
 ├── test_helpers.h      ✓ complete
-├── test_bitstream.c    ✓ complete
-├── test_file_reader.c  ✓ complete
-├── test_file_writer.c  ✓ complete
-├── test_list.c         ✓ complete
-├── test_tree.c         ✓ complete
-└── test_utils.c        ✓ complete
+├── test_bitstream.c    ✓ complete (7 tests: reader/writer, EOF, NULL)
+├── test_file_reader.c  ✓ complete (5 tests)
+├── test_file_writer.c  ✓ complete (4 tests)
+├── test_list.c         ✓ complete (5 tests)
+├── test_tree.c         ✓ complete (3 tests)
+└── test_utils.c        ✓ complete (2 tests)
 
 docs/
+├── Architecture.md     — module responsibilities, data flow, design decisions
+├── Changelog.md        — history of bug fixes and changes
+└── Roadmap.md          — phased work items and future plans
 
-
-Makefile                ✓ CMake wrapper
-CMakeLists.txt          ✓ primary build system
-tests/run_tests.sh      ✓ Bash test runner
-tests/run_tests.ps1     ✓ PowerShell test runner
-```
+build.ps1               — PowerShell build/test/clean script (Windows)
+Makefile                — CMake wrapper (Unix/macOS)
+CMakeLists.txt          — primary build system
+scripts/clean.ps1       — PowerShell cleanup utility

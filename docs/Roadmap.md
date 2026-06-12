@@ -1,13 +1,27 @@
 # Roadmap
 
 ## Phase 1 — Bug Fixes & Polish (Completed)
+
 All core functionality implemented and tested. See [Changelog](docs/Changelog.md) for details.
 
 ## Phase 2 — Edge Cases & Robustness (Current)
 
+### Phase 2.1 — Codebase Restructuring (Completed) ✅
+
+- ✅ PowerShell build script (`build.ps1`) with build/test/clean targets
+- ✅ Cross-platform Makefile wrapper
+- ✅ CMakeLists.txt rewritten with organized test targets
+- ✅ All headers refactored: consistent formatting, documented APIs
+- ✅ All source files refactored: improved types, error handling
+- ✅ All tests refactored: improved helpers, better assertions
+- ✅ Legacy scripts removed, build system unified
+- ✅ All 7 test suites passing
+
+### Phase 2.2 — Remaining Edge Cases & Robustness
+
 - [ ] Handle single-symbol input more robustly (tree with only one leaf node)
 - [ ] Validate header integrity on decompression (check symbol count matches expected)
-- [ ] Add progress/logging output options (e.g., `--verbose` flag)
+- [ ] Add `--verbose` flag for progress/logging output
 - [ ] Handle very large files (current implementation loads entire file into frequency metric)
 - [ ] Address any compiler warnings from `-Wall -Wextra`
 
