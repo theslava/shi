@@ -16,7 +16,7 @@ static int test_fr_new(void) {
 
     create_temp_file("test_fr.tmp", "hello");
 
-    fr_fd *fd = fr_new("test_fr.tmp", 64);
+    fr_fd* fd = fr_new("test_fr.tmp", 64);
     TEST_ASSERT(fd != NULL, "fr_new returns non-NULL");
 
     fr_done(fd);
@@ -32,7 +32,7 @@ static int test_fr_read(void) {
 
     create_temp_file("test_fr_byte.tmp", "AB");
 
-    fr_fd *fd = fr_new("test_fr_byte.tmp", 64);
+    fr_fd* fd = fr_new("test_fr_byte.tmp", 64);
     TEST_ASSERT(fd != NULL, "fr_new returns non-NULL");
 
     int byte1 = fr_read(fd);
@@ -52,10 +52,10 @@ static int test_fr_read(void) {
 static int test_fr_read_all(void) {
     TEST_START("fr_read all bytes");
 
-    const char *content = "Hello!";
+    const char* content = "Hello!";
     create_temp_file("test_fr_all.tmp", content);
 
-    fr_fd *fd = fr_new("test_fr_all.tmp", 64);
+    fr_fd* fd = fr_new("test_fr_all.tmp", 64);
     TEST_ASSERT(fd != NULL, "fr_new returns non-NULL");
 
     size_t i = 0;
@@ -80,7 +80,7 @@ static int test_fr_buffer(void) {
     create_temp_file("test_fr_buf.tmp", "ABCDEFGHIJ");
 
     /* Use a 2-byte buffer — should still read everything */
-    fr_fd *fd = fr_new("test_fr_buf.tmp", 2);
+    fr_fd* fd = fr_new("test_fr_buf.tmp", 2);
     TEST_ASSERT(fd != NULL, "fr_new with small buffer");
 
     int first = fr_read(fd);
@@ -100,10 +100,10 @@ static int test_fr_buffer(void) {
 static int test_fr_null(void) {
     TEST_START("NULL pointer handling");
 
-    fr_fd *fd = fr_new(NULL, 64);
+    fr_fd* fd = fr_new(NULL, 64);
     TEST_ASSERT(fd == NULL, "fr_new(NULL) returns NULL");
 
-    fr_done(NULL);  /* Should not crash */
+    fr_done(NULL); /* Should not crash */
 
     TEST_END;
     return 0;
