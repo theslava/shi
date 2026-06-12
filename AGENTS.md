@@ -20,4 +20,4 @@ Implement a complete **Huffman compression/decompression** tool in C with a focu
 - **[Architecture](docs/Architecture.md)**: Module responsibilities, data flow, key design decisions, and file index.
 - **[Roadmap](docs/Roadmap.md)**: Phased work items, current status, and detailed next steps.
 - **[Changelog](docs/Changelog.md)**: Detailed history of bug fixes, changes, and rationale.
-- **[Original Plan](docs/Plan.md)**: Legacy plan (do not modify).
+

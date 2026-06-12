@@ -86,7 +86,7 @@ tests/
 └── test_utils.c        ✓ complete
 
 docs/
-└── Plan.md             — legacy plan
+
 
 Makefile                ✓ CMake wrapper
 CMakeLists.txt          ✓ primary build system
