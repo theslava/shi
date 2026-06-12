@@ -1,23 +1,36 @@
 cmake_minimum_required(VERSION 3.15)
 project(shi C)
 
-set(CMAKE_C_STANDARD 99)
+# ---------------------------------------------------------------------------
+# Project settings
+# ---------------------------------------------------------------------------
+set(CMAKE_C_STANDARD          99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Compiler warnings
+# Verbose build: pass VERBOSE=1 to make / ninja to see full commands
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
+# ---------------------------------------------------------------------------
+# Compiler flags
+# ---------------------------------------------------------------------------
 if(MSVC)
     add_compile_options(/W4)
-    # Disable POSIX name warnings on Windows
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 else()
     add_compile_options(-Wall -Wextra -g)
 endif()
 
-# Include directories
+# ---------------------------------------------------------------------------
+# Include directory
+# ---------------------------------------------------------------------------
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# Source files for the main executable
+# ---------------------------------------------------------------------------
+# Main executable
+# ---------------------------------------------------------------------------
 set(MAIN_SOURCES
     src/main.c
     src/core/compress.c
@@ -31,95 +44,126 @@ set(MAIN_SOURCES
     src/utils/metric.c
     src/utils/sort.c
 )
-
-# Main executable
 add_executable(shi ${MAIN_SOURCES})
 
-# Enable testing
+# ---------------------------------------------------------------------------
+# Testing
+# ---------------------------------------------------------------------------
 enable_testing()
 
-# Test sources and executables
-set(TEST_SOURCES
-    tests/test_bitstream.c
-    tests/test_compress.c
-    tests/test_file_reader.c
-    tests/test_file_writer.c
-    tests/test_list.c
-    tests/test_tree.c
-    tests/test_utils.c
+# ---------------------------------------------------------------------------
+# Helper: create a test executable from a name and source list
+# ---------------------------------------------------------------------------
+function(add_shi_test NAME)
+    cmake_parse_arguments(T "" "" "SOURCES" ${ARGN})
+
+    add_executable(${NAME}
+        tests/${NAME}.c
+        tests/test_helpers.c
+        ${T_SOURCES}
+    )
+    target_include_directories(${NAME} PRIVATE ${CMAKE_SOURCE_DIR}/tests)
+    add_test(NAME ${NAME} COMMAND ${NAME})
+endfunction()
+
+# ---------------------------------------------------------------------------
+# Test executables
+# ---------------------------------------------------------------------------
+
+add_shi_test(test_bitstream
+    SOURCES
+        src/data_structures/bitstream.c
+        src/io/file_io.c
 )
 
-# Define test executables and their dependencies
-add_executable(test_bitstream
-    tests/test_bitstream.c
-    tests/test_helpers.c
-    src/io/file_io.c
-    src/data_structures/bitstream.c
+add_shi_test(test_compress
+    SOURCES
+        src/core/compress.c
+        src/core/decompress.c
+        src/data_structures/bitstream.c
+        src/data_structures/list.c
+        src/data_structures/node.c
+        src/data_structures/tree.c
+        src/data_structures/bitarray.c
+        src/utils/metric.c
+        src/utils/sort.c
+        src/io/file_io.c
 )
-target_include_directories(test_bitstream PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_bitstream COMMAND test_bitstream)
 
-add_executable(test_compress
-    tests/test_compress.c
-    tests/test_helpers.c
-    src/core/compress.c
-    src/core/decompress.c
-    src/io/file_io.c
-    src/data_structures/bitstream.c
-    src/data_structures/list.c
-    src/data_structures/node.c
-    src/data_structures/tree.c
-    src/data_structures/bitarray.c
-    src/utils/metric.c
-    src/utils/sort.c
+add_shi_test(test_file_reader
+    SOURCES
+        src/io/file_io.c
 )
-target_include_directories(test_compress PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_compress COMMAND test_compress)
 
-add_executable(test_file_reader
-    tests/test_file_reader.c
-    tests/test_helpers.c
-    src/io/file_io.c
+add_shi_test(test_file_writer
+    SOURCES
+        src/io/file_io.c
 )
-target_include_directories(test_file_reader PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_file_reader COMMAND test_file_reader)
 
-add_executable(test_file_writer
-    tests/test_file_writer.c
-    tests/test_helpers.c
-    src/io/file_io.c
+add_shi_test(test_list
+    SOURCES
+        src/data_structures/list.c
+        src/data_structures/node.c
 )
-target_include_directories(test_file_writer PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_file_writer COMMAND test_file_writer)
 
-add_executable(test_list
-    tests/test_list.c
-    tests/test_helpers.c
-    src/data_structures/list.c
-    src/data_structures/node.c
+add_shi_test(test_tree
+    SOURCES
+        src/data_structures/tree.c
+        src/data_structures/node.c
+        src/utils/sort.c
+        src/utils/metric.c
+        src/io/file_io.c
 )
-target_include_directories(test_list PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_list COMMAND test_list)
 
-add_executable(test_tree
-    tests/test_tree.c
-    tests/test_helpers.c
-    src/data_structures/tree.c
-    src/data_structures/node.c
-    src/utils/sort.c
-    src/utils/metric.c
-    src/io/file_io.c
+add_shi_test(test_utils
+    SOURCES
+        src/utils/metric.c
+        src/utils/sort.c
+        src/data_structures/node.c
+        src/io/file_io.c
 )
-target_include_directories(test_tree PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_tree COMMAND test_tree)
 
-add_executable(test_utils
-    tests/test_utils.c
-    tests/test_helpers.c
-    src/utils/metric.c
-    src/utils/sort.c
-    src/data_structures/node.c
-    src/io/file_io.c
+# ---------------------------------------------------------------------------
+# Custom targets
+# ---------------------------------------------------------------------------
+
+# Clean build directory
+add_custom_target(clean-build
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
+    COMMENT "Removing build directory..."
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
-target_include_directories(test_utils PRIVATE ${CMAKE_SOURCE_DIR}/tests)
-add_test(NAME test_utils COMMAND test_utils)
+
+# Full distclean (build + generated test artifacts)
+add_custom_target(distclean
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E rm -f tests/test_*.tmp
+    COMMENT "Removing build directory and test artifacts..."
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# Run all tests
+add_custom_target(run-tests
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    COMMENT "Running all tests..."
+)
+
+# Run a specific test: make run-test-NAME
+function(add_run_test_target NAME)
+    add_custom_target(run-test-${NAME}
+        COMMAND ${CMAKE_CTEST_COMMAND} -R "^${NAME}$" --output-on-failure
+        COMMENT "Running test: ${NAME}..."
+    )
+endfunction()
+add_run_test_target(test_bitstream)
+add_run_test_target(test_compress)
+add_run_test_target(test_file_reader)
+add_run_test_target(test_file_writer)
+add_run_test_target(test_list)
+add_run_test_target(test_tree)
+add_run_test_target(test_utils)
+
+# ---------------------------------------------------------------------------
+# Install
+# ---------------------------------------------------------------------------
+install(TARGETS shi RUNTIME DESTINATION bin)
