@@ -18,18 +18,18 @@
  * - eof: whether we've reached the end of the stream
  */
 typedef struct _bitstream {
-    fr_fd *fd;
+    fr_fd* fd;
     unsigned char current_byte;
-    int bit_offset;   /* 0 = most significant bit, 7 = least significant bit */
+    int bit_offset; /* 0 = most significant bit, 7 = least significant bit */
     int eof;
 } bitstream;
 
 /* --- Reader API (existing) --- */
-bitstream* bs_new(fr_fd *fd);
-int bs_read_bit(bitstream *bs);
-unsigned int bs_read_bits(bitstream *bs, int n);
-int bs_eof(bitstream *bs);
-void bs_done(bitstream *bs);
+bitstream* bs_new(fr_fd* fd);
+int bs_read_bit(bitstream* bs);
+unsigned int bs_read_bits(bitstream* bs, int n);
+int bs_eof(bitstream* bs);
+void bs_done(bitstream* bs);
 
 /*
  * Bitstream state (WRITER):
@@ -39,17 +39,17 @@ void bs_done(bitstream *bs);
  * - bits_written: total number of bits written so far
  */
 typedef struct _bitstream_writer {
-    fw_fd *fd;
+    fw_fd* fd;
     unsigned char current_byte;
-    int bit_offset;   /* 0 = most significant bit, 7 = least significant bit */
+    int bit_offset; /* 0 = most significant bit, 7 = least significant bit */
     int bits_written;
 } bitstream_writer;
 
 /* --- Writer API (new) --- */
-bitstream_writer* bsw_new(fw_fd *fd);
-int bsw_write_bit(bitstream_writer *bsw, int bit);
-void bsw_write_bits(bitstream_writer *bsw, unsigned int value, int n);
-void bsw_flush(bitstream_writer *bsw);
-void bsw_done(bitstream_writer *bsw);
+bitstream_writer* bsw_new(fw_fd* fd);
+int bsw_write_bit(bitstream_writer* bsw, int bit);
+void bsw_write_bits(bitstream_writer* bsw, unsigned int value, int n);
+void bsw_flush(bitstream_writer* bsw);
+void bsw_done(bitstream_writer* bsw);
 
 #endif /* __bitstream_h__ */

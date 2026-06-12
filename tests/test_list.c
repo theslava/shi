@@ -15,7 +15,7 @@
 static int test_list_new(void) {
     TEST_START("new_list / list_done");
 
-    list *l = new_list();
+    list* l = new_list();
     TEST_ASSERT(l != NULL, "new_list returns non-NULL");
 
     delete_list(l);
@@ -28,9 +28,9 @@ static int test_list_new(void) {
 static int test_list_append(void) {
     TEST_START("list_append");
 
-    list *l = new_list();
-    node *n1 = new_node(1, 'A');
-    node *n2 = new_node(2, 'B');
+    list* l = new_list();
+    node* n1 = new_node(1, 'A');
+    node* n2 = new_node(2, 'B');
     TEST_ASSERT(n1 != NULL && n2 != NULL, "nodes created");
 
     list_append(l, n1);
@@ -50,14 +50,14 @@ static int test_list_append(void) {
 static int test_list_pop(void) {
     TEST_START("list_pop");
 
-    list *l = new_list();
-    node *n = new_node(1, 'A');
+    list* l = new_list();
+    node* n = new_node(1, 'A');
     TEST_ASSERT(n != NULL, "node created");
 
     list_append(l, n);
     TEST_ASSERT(list_size(l) == 1, "list has 1 element");
 
-    node *popped = remove_node(l);
+    node* popped = remove_node(l);
     TEST_ASSERT(popped != NULL, "remove_node returns non-NULL");
     TEST_ASSERT(list_size(l) == 0, "list is empty after pop");
 
@@ -72,8 +72,8 @@ static int test_list_pop(void) {
 static int test_list_pop_empty(void) {
     TEST_START("list_pop from empty list");
 
-    list *l = new_list();
-    node *popped = remove_node(l);
+    list* l = new_list();
+    node* popped = remove_node(l);
     TEST_ASSERT(popped == NULL, "remove_node returns NULL on empty list");
 
     delete_list(l);
@@ -86,7 +86,7 @@ static int test_list_pop_empty(void) {
 static int test_list_null(void) {
     TEST_START("NULL pointer handling");
 
-    delete_list(NULL);  /* Should not crash */
+    delete_list(NULL); /* Should not crash */
 
     TEST_END;
     return 0;

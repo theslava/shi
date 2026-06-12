@@ -34,7 +34,7 @@ static int test_metric(void) {
 static int test_sort_nodes(void) {
     TEST_START("sort_nodes");
 
-    node *nodes[5];
+    node* nodes[5];
     for (int i = 0; i < 5; i++) {
         nodes[i] = new_node(i, 'A' + i);
         TEST_ASSERT(nodes[i] != NULL, "node created");
