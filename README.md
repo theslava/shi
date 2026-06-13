@@ -51,74 +51,113 @@ The compressed file header stores:
 ## Tools Used
 
 - **Language**: C99
-- **Build System**: CMake (primary) with cross-platform wrappers
+- **Build System**: CMake 3.15+ (primary and only build system)
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: Custom test suite (7 test executables, 20+ test cases)
-- **Test Runners**: `build.ps1` (Windows), `make test` (Unix/macOS)
+- **Testing**: CTest — 7 test executables, 20+ test cases
 
-## Build Instructions
+## Prerequisites
 
-### Prerequisites
+- **CMake** ≥ 3.15
+- **A C compiler**: GCC, Clang, or MSVC (Visual Studio Build Tools)
+- **Ninja** (optional, recommended for faster builds)
 
-- CMake ≥ 3.15
-- A C compiler (GCC, Clang, or MSVC)
-- Ninja (optional, auto-detected for faster builds)
+## Build
 
-### Build
+### Quick Start
 
-```powershell
-# Windows (PowerShell)
-.\build.ps1
-
-# Or using CMake directly
-cmake -B build -DCMAKE_BUILD_TYPE=Release
+```bash
+# Configure and build in one step
+cmake -B build
 cmake --build build
-
-# Unix/macOS (Makefile)
-make
 ```
 
-The main executable `shi` will be built in the `build` directory (or current directory depending on your CMake generator).
+The main executable `shi` will be located in the `build/` directory.
 
 ### Build Options
 
-```powershell
+```bash
+# Specify build type
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+# Available build types:
+#   Debug            — Full debug info, no optimization
+#   Release          — Full optimization, no debug info
+#   RelWithDebInfo   — Full optimization + debug info (recommended for most use cases)
+#   MinSizeRel       — Optimize for size
+
 # Verbose build (show full compiler commands)
-.\build.ps1 build -ShowVerbose
+cmake --build build --verbose
 
-# Release build
-.\build.ps1 build -BuildType Release
-
-# Show help
-.\build.ps1 help
+# Build with Ninja (if installed)
+cmake -B build -G Ninja
+cmake --build build
 ```
+
+### Full Build Workflow
 
 ```bash
-# Verbose build (show full compiler commands)
-make build VERBOSE=1
+# 1. Configure the project
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
 
-# Release build
-make build BUILD_TYPE=Release
+# 2. Build the project
+cmake --build build
+
+# 3. Run tests
+ctest --test-dir build
+
+# 4. Clean up
+cmake --build . --target clean-build
 ```
 
-### Running Tests
-
-```powershell
-# Windows
-.\build.ps1 test
-
-# Run a specific test
-.\build.ps1 test bitstream    # test_bitstream
-.\build.ps1 test compress     # test_compress
-```
+### Install
 
 ```bash
-# Unix/macOS
-make test
+# Install to system (default: /usr/local on Unix, C:\Program Files on Windows)
+cmake --install build
+```
 
-# Run a specific test
-make test-bitstream
-make test-compress
+## Running Tests
+
+### Run All Tests
+
+```bash
+# From the project root
+ctest --test-dir build --output-on-failure
+
+# Convenience target (equivalent)
+cmake --build . --target run-tests
+```
+
+### Run a Specific Test
+
+```bash
+# Using ctest directly
+ctest --test-dir build -R test_compress --output-on-failure
+
+# Using convenience target
+cmake --build . --target run-test-compress
+```
+
+### Available Test Suites
+
+| Test Target | Convenience Target | Description |
+|-------------|-------------------|-------------|
+| `test_bitstream` | `run-test-test_bitstream` | Bitstream reader/writer (7 tests) |
+| `test_compress` | `run-test-test_compress` | Compression roundtrip (3 tests) |
+| `test_file_reader` | `run-test-test_file_reader` | File reader (5 tests) |
+| `test_file_writer` | `run-test-test_file_writer` | File writer (4 tests) |
+| `test_list` | `run-test-test_list` | Linked list (5 tests) |
+| `test_tree` | `run-test-test_tree` | Huffman tree (3 tests) |
+| `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
+
+### Test Output
+
+```bash
+# Run all tests with detailed output
+ctest --test-dir build --output-on-failure -V
+
+# Run tests in a specific build configuration
+ctest --test-dir build -C Release --output-on-failure
 ```
 
 ## Usage
@@ -143,7 +182,6 @@ make test-compress
 - ✅ Full decompression pipeline (`decompress_file()`)
 - ✅ Error handling with NULL checks and status codes throughout
 - ✅ All 7 test suites passing (100%)
-- ✅ Cross-platform build system (CMake + PowerShell + Makefile)
 - ✅ Magic byte validation on decompression
 
 ### Known Limitations
@@ -210,10 +248,7 @@ docs/
 ├── Changelog.md        — history of bug fixes and changes
 └── Roadmap.md          — phased work items and future plans
 
-build.ps1               — PowerShell build/test/clean script
-Makefile                — CMake wrapper (Unix/macOS)
-CMakeLists.txt          — primary build system
-scripts/clean.ps1       — PowerShell cleanup utility
+CMakeLists.txt          — CMake build configuration
 ```
 
 ## License

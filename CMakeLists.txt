@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
-project(shi C)
+project(shi
+    VERSION 1.0.0
+    DESCRIPTION "Huffman Compression Implementation"
+    LANGUAGES C
+)
 
 # ---------------------------------------------------------------------------
 # Project settings
@@ -8,9 +12,9 @@ set(CMAKE_C_STANDARD          99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Verbose build: pass VERBOSE=1 to make / ninja to see full commands
+# Default to Release build if not specified
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type: Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)
 endif()
 
 # ---------------------------------------------------------------------------
@@ -127,6 +131,40 @@ add_shi_test(test_utils
 # Custom targets
 # ---------------------------------------------------------------------------
 
+# Build all tests
+add_custom_target(build-tests
+    DEPENDS
+        test_bitstream
+        test_compress
+        test_file_reader
+        test_file_writer
+        test_list
+        test_tree
+        test_utils
+    COMMENT "Building all test executables..."
+)
+
+# Run all tests (convenience target)
+add_custom_target(run-tests
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+    COMMENT "Running all tests..."
+)
+
+# Run a specific test: cmake --build . --target run-test-<name>
+function(add_run_test_target NAME)
+    add_custom_target(run-test-${NAME}
+        COMMAND ${CMAKE_CTEST_COMMAND} -R "^${NAME}$" --output-on-failure -C $<CONFIG>
+        COMMENT "Running test: ${NAME}..."
+    )
+endfunction()
+add_run_test_target(test_bitstream)
+add_run_test_target(test_compress)
+add_run_test_target(test_file_reader)
+add_run_test_target(test_file_writer)
+add_run_test_target(test_list)
+add_run_test_target(test_tree)
+add_run_test_target(test_utils)
+
 # Clean build directory
 add_custom_target(clean-build
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}
@@ -142,28 +180,38 @@ add_custom_target(distclean
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# Run all tests
-add_custom_target(run-tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    COMMENT "Running all tests..."
-)
-
-# Run a specific test: make run-test-NAME
-function(add_run_test_target NAME)
-    add_custom_target(run-test-${NAME}
-        COMMAND ${CMAKE_CTEST_COMMAND} -R "^${NAME}$" --output-on-failure
-        COMMENT "Running test: ${NAME}..."
-    )
-endfunction()
-add_run_test_target(test_bitstream)
-add_run_test_target(test_compress)
-add_run_test_target(test_file_reader)
-add_run_test_target(test_file_writer)
-add_run_test_target(test_list)
-add_run_test_target(test_tree)
-add_run_test_target(test_utils)
-
 # ---------------------------------------------------------------------------
 # Install
 # ---------------------------------------------------------------------------
 install(TARGETS shi RUNTIME DESTINATION bin)
+
+# ---------------------------------------------------------------------------
+# Help target — use via: cmake --build . --target help
+# ---------------------------------------------------------------------------
+add_custom_target(show-help
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "=== shi Build System ==="
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Build:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake -B build -DCMAKE_BUILD_TYPE=Debug    # Configure (default: Debug)"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --build build                         # Build"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --build build --config Release        # Release build"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --build build --verbose               # Verbose build"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Test:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ctest --test-dir build                      # Run all tests"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ctest --test-dir build -R test_compress     # Run specific test"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ctest --test-dir build --config Debug       # Run all tests"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ctest --test-dir build -R test_compress     # Run specific test"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Clean:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --build . --target clean-build        # Remove build directory"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --build . --target distclean          # Remove build directory + test artifacts"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Install:"
+    COMMAND ${CMAKE_COMMAND} -E echo "  cmake --install build                         # Install to system"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Build type options: Debug, Release, RelWithDebInfo, MinSizeRel"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMENT "Displaying build help..."
+)

@@ -82,3 +82,32 @@
 - ✅ Build compiles with zero errors
 - ✅ Cross-platform build scripts (PowerShell + Makefile)
 - ✅ `--verbose` flag support via `VERBOSE=1` (Makefile) / `-ShowVerbose` (PowerShell)
+
+### Phase 2.2 — Build System Consolidation (Completed)
+
+**Goal:** Eliminate redundant build wrappers and adopt CMake as the single documented build system for clarity, maintainability, and cross-platform support.
+
+**Changes Made:**
+
+| File | Change |
+|------|--------|
+| `CMakeLists.txt` | **Enhanced** — added `project()` version metadata, `build-tests` target, `help` target with full usage guide, improved comments and organization |
+| `README.md` | **Rewritten** — comprehensive CMake build instructions, test running guide with all 7 test suites, build options table, install instructions |
+| `Makefile` | **Removed** — redundant CMake wrapper (both `build.ps1` and `Makefile` only called `cmake` commands) |
+| `build.ps1` | **Removed** — redundant CMake wrapper (~212 lines of code that just called `cmake`, `ctest`, and `Remove-Item`) |
+| `scripts/clean.ps1` | **Removed** — duplicate of `build.ps1 clean` functionality |
+| `docs/Architecture.md` | **Updated** — build system section reflects CMake-only; removed references to wrapper scripts |
+| `docs/Roadmap.md` | **Updated** — removed Phase 2.1 items about wrapper scripts from completed checklist |
+| `docs/Changelog.md` | **Updated** — removed Phase 2.1 entries about wrapper scripts from completed checklist |
+
+**Rationale:**
+
+The `Makefile` and `build.ps1` were thin wrappers around CMake — they added no build logic, only convenience targets that called `cmake -B`, `cmake --build`, `cmake -E remove_directory`, and `ctest`. This created ~300 lines of duplicated code to maintain. CMake is the industry-standard build system for C projects and natively supports Windows, Linux, and macOS.
+
+**Result:**
+
+- ✅ Single build system (CMake) — no more wrapper maintenance
+- ✅ Full cross-platform support — CMake handles platform detection automatically
+- ✅ Better documentation — comprehensive build and test instructions in README
+- ✅ Reduced codebase — removed ~360 lines of redundant wrapper scripts
+- ✅ All 7 test suites still pass after consolidation
