@@ -42,7 +42,7 @@ Compressed input → read_header() [magic + num_symbols + file_size + per-symbol
 4. **Header format**: `[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]`.
 5. **Magic bytes**: All `.huf` files start with `"SHI\x00"` (0x53, 0x48, 0x49, 0x00) for format identification.
 6. **Error handling**: Every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error).
-7. **Cross-platform compatibility**: Build system uses CMake with auto-detected generator (Ninja → MSVC → MinGW Makefiles).
+7. **Cross-platform compatibility**: Build system is CMake-only. CMake auto-detects the platform and selects the appropriate generator (Ninja, MSVC, or GCC/Clang) and compiler flags.
 
 ## File Index
 
@@ -95,7 +95,4 @@ docs/
 ├── Changelog.md        — history of bug fixes and changes
 └── Roadmap.md          — phased work items and future plans
 
-build.ps1               — PowerShell build/test/clean script (Windows)
-Makefile                — CMake wrapper (Unix/macOS)
-CMakeLists.txt          — primary build system
-scripts/clean.ps1       — PowerShell cleanup utility
+CMakeLists.txt          — CMake build configuration (sources, tests, compiler flags, install)
