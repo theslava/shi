@@ -43,6 +43,7 @@ typedef struct _bitstream_writer {
     unsigned char current_byte;
     int bit_offset; /* 0 = most significant bit, 7 = least significant bit */
     int bits_written;
+    int error;
 } bitstream_writer;
 
 /* --- Writer API (new) --- */
@@ -51,5 +52,9 @@ int bsw_write_bit(bitstream_writer* bsw, int bit);
 void bsw_write_bits(bitstream_writer* bsw, unsigned int value, int n);
 void bsw_flush(bitstream_writer* bsw);
 void bsw_done(bitstream_writer* bsw);
+
+/* Check and clear the writer error state */
+int bsw_error(bitstream_writer* bsw);
+void bsw_clear_error(bitstream_writer* bsw);
 
 #endif /* __bitstream_h__ */

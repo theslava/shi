@@ -30,7 +30,7 @@ tree* new_tree(void) {
     if (ret != NULL) {
         ret->root = NULL;
         /* Initialize all nodes in the array as empty */
-        for (int i = 0; i < 512; i++) {
+        for (int i = 0; i < MAX_NODES; i++) {
             ret->nodes[i].left = NULL;
             ret->nodes[i].right = NULL;
             ret->nodes[i].byte = -1;
@@ -179,13 +179,16 @@ tree* new_tree_from_metric(metric* met) {
     return ret;
 }
 
-/* Free dynamically allocated nodes in the tree (not the static array) */
+/* Free dynamically allocated nodes in the tree (post-order traversal).
+ * Note: nodes from new_tree_from_metric() are embedded in tree->nodes[] and
+ * must NOT be freed. This function is only used for trees built by
+ * reconstruct_tree_from_codes() which allocates nodes via new_node(). */
 void free_tree_nodes(node* root) {
     if (root == NULL)
         return;
     free_tree_nodes(root->left);
     free_tree_nodes(root->right);
-    /* All nodes are stored in the tree's static array, so nothing to free here. */
+    free(root);
 }
 
 /* Helper: recursive DFS to generate Huffman codes */

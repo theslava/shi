@@ -26,6 +26,7 @@
 #include "data_structures/node.h"
 #include "data_structures/tree.h"
 #include "data_structures/bitstream.h"
+#include "core/decompress.h"
 #include "core/compress.h"
 
 /* ==========================================================================

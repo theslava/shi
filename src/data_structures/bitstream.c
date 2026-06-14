@@ -170,6 +170,7 @@ bitstream_writer* bsw_new(fw_fd* fd) {
     bsw->current_byte = 0;
     bsw->bit_offset = 0; /* Start at MSB (bit 7) */
     bsw->bits_written = 0;
+    bsw->error = 0;
 
     return bsw;
 }
@@ -197,7 +198,10 @@ int bsw_write_bit(bitstream_writer* bsw, int bit) {
 
     /* If byte is full, write it out */
     if (bsw->bit_offset > 7) {
-        fw_write_byte(bsw->fd, bsw->current_byte);
+        if (fw_write_byte(bsw->fd, bsw->current_byte) != 0) {
+            bsw->error = 1;
+            return -1;
+        }
         bsw->current_byte = 0;
         bsw->bit_offset = 0;
     }
@@ -227,11 +231,13 @@ void bsw_write_bits(bitstream_writer* bsw, unsigned int value, int n) {
  * This should be called before closing the writer to ensure all bits are written.
  */
 void bsw_flush(bitstream_writer* bsw) {
-    if (!bsw || bsw->bit_offset == 0)
+    if (!bsw || bsw->bit_offset == 0 || bsw->error)
         return;
 
     /* Pad with zeros and write the remaining byte */
-    fw_write_byte(bsw->fd, bsw->current_byte);
+    if (fw_write_byte(bsw->fd, bsw->current_byte) != 0) {
+        bsw->error = 1;
+    }
     bsw->current_byte = 0;
     bsw->bit_offset = 0;
 }
@@ -244,5 +250,16 @@ void bsw_done(bitstream_writer* bsw) {
     if (bsw) {
         bsw_flush(bsw);
         free(bsw);
+    }
+}
+
+/* Check and clear the writer error state */
+int bsw_error(bitstream_writer* bsw) {
+    return bsw && bsw->error ? 1 : 0;
+}
+
+void bsw_clear_error(bitstream_writer* bsw) {
+    if (bsw) {
+        bsw->error = 0;
     }
 }

@@ -13,11 +13,16 @@ metric* new_metric() {
     return met;
 }
 
-metric* new_metric_from_file(fr_fd* file) {
+metric* new_metric_from_file(fr_fd* file, unsigned int* file_size_out) {
     int i;
     metric* met = new_metric();
+    unsigned int file_size = 0;
     while ((i = fr_read(file)) != EOF) {
         met->characters[i]++;
+        file_size++;
+    }
+    if (file_size_out) {
+        *file_size_out = file_size;
     }
     return met;
 }

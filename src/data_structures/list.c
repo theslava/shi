@@ -12,6 +12,12 @@ list* new_list(void) {
     return l;
 }
 
+/*
+ * WARNING: delete_list() frees individual nodes. This is DANGEROUS when the
+ * nodes are embedded in a tree's static array (tree->nodes[]). It is safe to
+ * use only with lists created by new_list() where nodes were heap-allocated
+ * separately. In this codebase, delete_list() is unused.
+ */
 void delete_list(list* l) {
     /* Free all nodes in the list */
     if (l != NULL) {

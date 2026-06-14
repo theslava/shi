@@ -28,7 +28,7 @@ typedef struct _metric {
 } metric;
 
 metric* new_metric();
-metric* new_metric_from_file(fr_fd* file);
+metric* new_metric_from_file(fr_fd* file, unsigned int* file_size_out);
 void fill_metric(metric* met, fr_fd* file);
 void delete_metric(metric* met);
 #endif

@@ -26,9 +26,11 @@
 #include "utils/sort.h"
 #include "utils/metric.h"
 
+#define MAX_NODES 512
+
 typedef struct _tree {
     node* root;
-    node nodes[512]; /* array of nodes */
+    node nodes[MAX_NODES]; /* array of nodes */
 } tree;
 
 /* Tree creation / destruction */
