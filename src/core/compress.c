@@ -28,6 +28,14 @@
 #include "data_structures/bitstream.h"
 #include "core/compress.h"
 
+#define MAGIC_BYTES "\x53\x48\x49\x00"
+
+static int verbose = 0;
+
+void set_verbose(int v) {
+    verbose = v;
+}
+
 int compress_file(const char* input_file, const char* output_file) {
     /* 1. Open the input file for reading */
     fr_fd* input_fd = fr_new((char*)input_file, 4096);
@@ -36,8 +44,9 @@ int compress_file(const char* input_file, const char* output_file) {
         return -1;
     }
 
-    /* 2. Build the frequency metric from the input data */
-    metric* met = new_metric_from_file(input_fd);
+    /* 2. Build the frequency metric from the input data (also returns file_size) */
+    unsigned int file_size = 0;
+    metric* met = new_metric_from_file(input_fd, &file_size);
     if (!met) {
         fprintf(stderr, "Error: Could not build metric from '%s'\n", input_file);
         fr_done(input_fd);
@@ -77,6 +86,7 @@ int compress_file(const char* input_file, const char* output_file) {
 
     /* 6. Write magic bytes "SHI\x00" */
     const unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    (void)MAGIC_BYTES; /* kept for explicit byte values; define kept for reference */
     if (fw_write_bytes(output_fd, magic, 4) != 0) {
         fprintf(stderr, "Error: Could not write magic bytes to '%s'\n", output_file);
         fw_done(output_fd);
@@ -85,15 +95,6 @@ int compress_file(const char* input_file, const char* output_file) {
         fr_done(input_fd);
         return -1;
     }
-
-    /* 7. Get the original file size */
-    fr_rewind(input_fd);
-    unsigned int file_size = 0;
-    int ch;
-    while ((ch = fr_read(input_fd)) != EOF) {
-        file_size++;
-    }
-    fr_rewind(input_fd);
 
     /* 8. Write the header (metadata needed for decompression) */
     if (write_header(output_fd, codes, code_lengths, num_symbols, file_size) != 0) {
@@ -133,12 +134,17 @@ int compress_file(const char* input_file, const char* output_file) {
     fw_flush(output_fd);
     fw_done(output_fd);
 
-    /* 9. Clean up */
+    /* 10. Clean up */
     delete_tree(t);
     delete_metric(met);
     fr_done(input_fd);
 
-    printf("Compression complete: '%s' -> '%s'\n", input_file, output_file);
+    if (verbose) {
+        printf("Compression complete: '%s' -> '%s' (%d symbols, file_size=%u)\n", input_file,
+               output_file, num_symbols, file_size);
+    } else {
+        printf("Compression complete: '%s' -> '%s'\n", input_file, output_file);
+    }
     return 0;
 }
 

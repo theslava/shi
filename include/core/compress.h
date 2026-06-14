@@ -10,6 +10,9 @@
 /* High-level entry point (existing) */
 int compress_file(const char* input_file, const char* output_file);
 
+/* Set verbose mode for detailed output */
+void set_verbose(int v);
+
 /* --- Internal helpers (new stubs) --- */
 
 /* Write the Huffman tree metadata to the output file so it can be reconstructed.
@@ -37,15 +40,5 @@ int compress_data(fr_fd* input_fd,
 /* Decompress data from input bitstream using the Huffman tree and write to output file.
  * Returns 0 on success, -1 on error. */
 int decompress_data(fr_fd* input_fd, fw_fd* output_fd, node* tree_root, unsigned int file_size);
-
-/* ==========================================================================
- * Tree reconstruction
- * ========================================================================== */
-
-/* Reconstruct a Huffman tree from codes and code_lengths read from the header.
- * Returns pointer to root node, or NULL on error. */
-node* reconstruct_tree_from_codes(const unsigned int codes[256],
-                                  const int code_lengths[256],
-                                  int num_symbols);
 
 #endif

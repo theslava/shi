@@ -1,10 +1,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+#ifdef _WIN32
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #include "io/file_io.h"
 
 // creates a new file descriptor and opens the file for reading
-fr_fd* fr_new(char* file_path, unsigned int bsize) {
+fr_fd* fr_new(const char* file_path, unsigned int bsize) {
     if (!file_path)
         return NULL;
 
@@ -93,7 +99,16 @@ void fr_done(fr_fd* fd) {
 void fr_info(fr_fd* fd) {
     fprintf(stderr, "File path = %s\n", fd->file_path);
     fprintf(stderr, "Descriptor = %d\n", fd->file);
-    fprintf(stderr, "Current buffer = \n%s\n", fd->buffer);
+    fprintf(stderr, "Current buffer = [");
+    unsigned int print_len = fd->inbuf < 32 ? fd->inbuf : 32;
+    for (unsigned int j = 0; j < print_len; j++) {
+        if (j > 0)
+            fprintf(stderr, " ");
+        fprintf(stderr, "%02X", fd->buffer[j]);
+    }
+    if (fd->inbuf > 32)
+        fprintf(stderr, " ...");
+    fprintf(stderr, "]\n");
     fprintf(stderr, "Buffer size = %d\n", fd->buffer_size);
     fprintf(stderr, "Current position in buffer = %d\n", fd->pos);  // position within the buffer
     fprintf(stderr, "Bytes in buffer = %d\n", fd->inbuf);  // actual number of bytes in the buffer
@@ -165,7 +180,10 @@ int fw_write_bytes(fw_fd* wd, const unsigned char* data, unsigned int len) {
     /* If data is larger than buffer, write directly */
     if (len >= wd->buffer_size) {
         fw_flush(wd);
-        write(wd->file, data, len);
+        ssize_t written = write(wd->file, data, len);
+        if (written < 0 || (unsigned int)written != len) {
+            return -1;
+        }
         return 0;
     }
 
@@ -185,8 +203,13 @@ void fw_flush(fw_fd* wd) {
     if (!wd || wd->pos == 0)
         return;
 
-    write(wd->file, wd->buffer, wd->pos);
-    wd->pos = 0; /* reset position for next batch */
+    ssize_t written = write(wd->file, wd->buffer, wd->pos);
+    if (written < 0 || (ssize_t)wd->pos != written) {
+        /* On error, set pos to buffer_size to prevent re-flushing corrupted state */
+        wd->pos = wd->buffer_size;
+    } else {
+        wd->pos = 0; /* reset position for next batch */
+    }
 }
 
 // delete, cleanup, close the file writer

@@ -50,7 +50,7 @@ typedef struct _fw_fd {
 } fw_fd;
 
 /* Reader API */
-fr_fd* fr_new(char* file_path, unsigned int bsize);
+fr_fd* fr_new(const char* file_path, unsigned int bsize);
 int fr_read(fr_fd* fd);
 void fr_rewind(fr_fd* fd);
 void fr_done(fr_fd* fd);
