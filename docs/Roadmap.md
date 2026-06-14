@@ -20,6 +20,7 @@ All core functionality implemented and tested. See [Changelog](docs/Changelog.md
 - [ ] Add `--verbose` flag for progress/logging output
 - [ ] Handle very large files (current implementation loads entire file into frequency metric)
 - [ ] Address any compiler warnings from `-Wall -Wextra`
+- ✅ **Phase 2.3 — License & Standards:** See [Changelog](docs/Changelog.md) for details (GPL→public domain, C99→C23, K&R `()` fix, warning analysis)
 
 ## Phase 3 — Testing Improvements
 

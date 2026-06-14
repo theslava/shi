@@ -2,7 +2,7 @@
 #include "utils/metric.h"
 #include "io/file_io.h"
 
-metric* new_metric() {
+metric* new_metric(void) {
     int i = 0;
     metric* met = (metric*)malloc(sizeof(struct _metric));
     if (met == NULL) {

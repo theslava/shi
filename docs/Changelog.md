@@ -111,3 +111,56 @@ The `Makefile` and `build.ps1` were thin wrappers around CMake — they added no
 - ✅ Better documentation — comprehensive build and test instructions in README
 - ✅ Reduced codebase — removed ~360 lines of redundant wrapper scripts
 - ✅ All 7 test suites still pass after consolidation
+
+---
+
+## Phase 2.3 — License & Compiler Standards (Completed)
+
+### License Change: GPL → Public Domain
+
+**Rationale:** The code is a straightforward educational implementation of Huffman compression. It contains no novel algorithms, proprietary logic, or commercially significant IP. Released to the public domain as a personal educational curiosity.
+
+**Changes:**
+
+| File | Change |
+|------|--------|
+| `src/main.c` | Removed 21-line GPL header → `/* Released to the public domain — No rights reserved. */` |
+| `src/core/compress.c` | Removed 21-line GPL header → public domain |
+| `src/core/decompress.c` | Removed 21-line GPL header → public domain |
+| `src/data_structures/tree.c` | Removed 20-line GPL header → public domain |
+| `include/core/compress.h` | Removed Emacs mode-line (`/* -*- Mode: C; ... -*- */`) → public domain |
+| `include/core/decompress.h` | Removed Emacs mode-line → public domain |
+| `include/data_structures/bitarray.h` | Removed 21-line GPL header → public domain |
+| `include/data_structures/list.h` | Removed 21-line GPL header → public domain |
+| `include/data_structures/tree.h` | Removed 21-line GPL header → public domain |
+| `include/io/file_io.h` | Removed 21-line GPL header → public domain |
+| `include/utils/metric.h` | Removed 21-line GPL header → public domain |
+| `include/utils/sort.h` | Removed 21-line GPL header → public domain |
+
+**Total:** 10 files had GPL headers removed (10 × ~21 lines = ~210 lines removed). 2 files had Emacs mode-line headers removed.
+
+---
+
+### C Standard: C99 → C23
+
+**Target:** GCC `--std=c23` (primary compiler). CMakeLists.txt updated: `CMAKE_C_STANDARD` → `23`.
+
+**Compiler Warning Analysis (all with `-Wall -Wextra -Wpedantic`):**
+
+| Compiler | C99 | C11 | C17 | C23 | Notes |
+|----------|-----|-----|-----|-----|-------|
+| **GCC 15.2.0 (MinGW)** | 0 | 0 | 0 | **0** | Clean across all standards |
+| **Clang 22.1.7 (MinGW)** | 2 | 2 | 2 | **0** | K&R `()` deprecation in pre-C23 modes |
+
+**K&R-style `()` fix:** Changed `metric* new_metric()` → `metric* new_metric(void)` in both the declaration (`include/utils/metric.h`) and definition (`src/utils/metric.c`). This is required because:
+- In C17 and earlier, `func()` means "unknown number of arguments" (K&R style), which Clang flags as deprecated.
+- In C23, `func()` is a proper prototype meaning "no arguments." Clang no longer flags it.
+- GCC never flagged this issue.
+
+**MSVC C4996 warnings** (`strcpy`, `open`, `close`, `read`, `lseek` deprecation): Ignored per decision — these are MSVC-specific and only affect builds with MSVC on Windows. GCC/Clang on Linux do not flag these POSIX functions.
+
+**`#include <malloc.h>`:** Used in 4 headers. Both GCC 15 and Clang 22 accept it under C23 without warnings. It is a common cross-platform extension (POSIX + MSVC). No action needed.
+
+**Test Results:** All 7 test suites pass (100%).
+
+---

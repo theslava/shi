@@ -1,4 +1,4 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*- */
+/* Released to the public domain — No rights reserved. */
 
 #ifndef __compress_h__
 #define __compress_h__
