@@ -12,19 +12,18 @@ set(CMAKE_C_STANDARD          99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Default to Release build if not specified
+# Default to Debug build if not specified
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type: Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)
 endif()
 
 # ---------------------------------------------------------------------------
-# Compiler flags
+# Compiler flags — GCC/Clang
 # ---------------------------------------------------------------------------
-if(MSVC)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -g)
+elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/W4)
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-else()
-    add_compile_options(-Wall -Wextra -g)
 endif()
 
 # ---------------------------------------------------------------------------
