@@ -126,6 +126,20 @@ add_shi_test(test_utils
         src/io/file_io.c
 )
 
+add_shi_test(test_decompress_version
+    SOURCES
+        src/core/compress.c
+        src/core/decompress.c
+        src/data_structures/bitstream.c
+        src/data_structures/list.c
+        src/data_structures/node.c
+        src/data_structures/tree.c
+        src/data_structures/bitarray.c
+        src/utils/metric.c
+        src/utils/sort.c
+        src/io/file_io.c
+)
+
 # ---------------------------------------------------------------------------
 # Custom targets
 # ---------------------------------------------------------------------------
@@ -140,6 +154,7 @@ add_custom_target(build-tests
         test_list
         test_tree
         test_utils
+        test_decompress_version
     COMMENT "Building all test executables..."
 )
 
@@ -163,6 +178,7 @@ add_run_test_target(test_file_writer)
 add_run_test_target(test_list)
 add_run_test_target(test_tree)
 add_run_test_target(test_utils)
+add_run_test_target(test_decompress_version)
 
 # Clean build directory
 add_custom_target(clean-build
