@@ -12,8 +12,10 @@
 | `tree.c / tree.h` | Build Huffman tree from frequency metric; `generate_codes()` traversal |
 | `bitstream.c / bitstream.h` | Bit-level reader (`bitstream`) + writer (`bitstream_writer`), MSB-first |
 | `bitarray.c / bitarray.h` | Bit array operations + `ba_write_to_file()` (bit-to-byte packing) |
-| `compress.c / compress.h` | High-level compression pipeline: `compress_file()`, `write_header()`, `compress_data()` |
-| `decompress.c / decompress.h` | High-level decompression pipeline: `decompress_file()`, `read_header()`, `reconstruct_tree_from_codes()`, `decompress_data()` |
+| `compress.c / compress.h` | High-level compression pipeline: `compress_file()`, `write_header()`, `compress_data()`, `shi_compress_v0()` |
+| `decompress.c / decompress.h` | High-level decompression pipeline: `decompress_file()`, `read_header()`, `reconstruct_tree_from_codes()`, `decompress_data()`, `shi_decompress_v0()` |
+| `version.h` | Version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions, per-version entry point declarations, `shi_detect_version()` |
+| `args.c / args.h` | CLI argument parsing — zero-dependency manual parser supporting short/long flags, combined flags (`-vh`), `--` separator, unknown flag detection |
 
 ## Data Flow
 
@@ -40,7 +42,7 @@ Compressed input → read_header() [magic + num_symbols + file_size + per-symbol
 2. **Buffered I/O**: Both reader and writer use a configurable buffer size (default 4096) to minimize system calls.
 3. **Static node array in tree**: `tree->nodes[512]` is allocated as part of the `tree` struct.
 4. **Header format**: `[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]`.
-5. **Magic bytes**: All `.huf` files start with `"SHI\x00"` (0x53, 0x48, 0x49, 0x00) for format identification.
+5. **Magic bytes & versioning**: All `.huf` files start with `"SHI<version>"` (0x53, 0x48, 0x49, `<version_byte>`). The 4th byte encodes the file format version. Currently only version 0 (`0x00`) is supported. Decompression reads the magic bytes first and dispatches to the appropriate version handler.
 6. **Error handling**: Every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error).
 7. **Cross-platform compatibility**: Build system is CMake-only. CMake auto-detects the platform and selects the appropriate generator (Ninja, MSVC, or GCC/Clang) and compiler flags.
 
@@ -50,7 +52,8 @@ Compressed input → read_header() [magic + num_symbols + file_size + per-symbol
 include/
 ├── core/
 │   ├── compress.h      ✓ complete
-│   └── decompress.h    ✓ complete
+│   ├── decompress.h    ✓ complete
+│   └── version.h       ✓ complete (version constants, magic bytes, dispatch)
 ├── data_structures/
 │   ├── bitarray.h      ✓ complete
 │   ├── bitstream.h     ✓ complete
@@ -75,13 +78,18 @@ src/
 │   └── tree.c          ✓ complete
 ├── io/
 │   └── file_io.c       ✓ complete
-├── main.c              ✓ complete
+├── cli/
+│   ├── args.c          ✓ complete (argument parsing)
+│   └── args.h          ✓ complete (API)
+├── main.c              ✓ complete (command dispatch)
 └── utils/
     ├── metric.c        ✓ complete
     └── sort.c          ✓ complete
 
 tests/
 ├── test_compress.c     ✓ complete (13 tests: roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
+├── test_decompress_version.c ✓ complete (10 tests: version handling)
+├── test_args.c         ✓ complete (20 tests: CLI argument parsing)
 ├── test_helpers.h      ✓ complete
 ├── test_bitstream.c    ✓ complete (7 tests: reader/writer, EOF, NULL)
 ├── test_file_reader.c  ✓ complete (5 tests)

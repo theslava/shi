@@ -1,5 +1,64 @@
 # Changelog
 
+## Phase 3 — File Format Versioning (Completed) ✅
+
+Established infrastructure for multiple file format versions.
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `include/core/version.h` | **Added** — version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions (`SHI_MAGIC_V0`, `shi_magic_v0[]`), per-version entry point declarations (`shi_compress_v0`, `shi_decompress_v0`), `shi_detect_version()` declaration |
+| `src/main.c` | **Modified** — added `#include "core/version.h"`, `--version <N>` argument parsing with bounds checking, `switch(version)` compress dispatch, magic byte detection + `switch(detected_version)` decompress dispatch |
+| `src/cli/args.c` | **Added** — zero-dependency CLI argument parser (short/long flags, combined flags, `--` separator, unknown flag detection) |
+| `include/cli/args.h` | **Added** — public API for CLI args (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`) |
+| `tests/test_args.c` | **Added** — 20 tests covering every flag, error path, and edge case |
+| `src/core/compress.c` | **Modified** — added `shi_magic_v0[]` definition, `shi_compress_v0()` wrapper delegating to `compress_file()` |
+| `src/core/decompress.c` | **Modified** — added `shi_decompress_v0()` wrapper delegating to `decompress_file()` |
+
+### CLI
+
+```
+Usage: shi [--version <N>] <compress|decompress> <input_file> <output_file>
+
+Options:
+  --version <N>    Compress/decompress using format version N (default: 0)
+  -v, --verbose    Enable verbose output
+  -h, --help       Show this help message
+```
+
+### File Format
+
+Magic bytes now encode the version in the 4th byte: `"SHI<version>"`
+
+| Version | Magic | Description |
+|---------|-------|-------------|
+| 0 (0x00) | `SHI\x00` | Current format — per-symbol code storage |
+| 1 (0x01) | `SHI\x01` | Planned — flat tree header (see Roadmap) |
+
+### Phase 3.1 — CLI Argument Parsing Refactoring (Completed) ✅
+
+Extracted inline argument parsing from `src/main.c` into a dedicated CLI module for cleaner separation of concerns and testability.
+
+**Changes:**
+
+| File | Change |
+|------|--------|
+| `src/cli/args.c` | **Added** — zero-dependency manual parser supporting short/long flags, combined flags (`-vh`), `--` separator, unknown flag detection |
+| `include/cli/args.h` | **Added** — public API (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`) |
+| `src/main.c` | **Modified** — replaced inline while-loop parsing with `shi_parse_args()` call, reduced from 124 → ~75 lines |
+| `tests/test_args.c` | **Added** — 20 tests covering every flag, error path, and edge case |
+| `CMakeLists.txt` | **Modified** — added `src/cli/args.c` to main build, added `test_args` test target |
+
+**Enhancements over the original inline parser:**
+- Unknown flag detection (`--bogus` → error message, was silently misinterpreted as command)
+- Combined short flags (`-vh` → `-v` then `-h`)
+- `--` to stop flag parsing
+- NULL-safe input handling
+- Detailed per-error messages
+
+---
+
 ## Phase 1 — Bug Fixes & Polish (Completed)
 
 ### Completed Issues

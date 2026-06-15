@@ -1,4 +1,4 @@
-# shi — Huffman Compression Implementation
+﻿# shi — Huffman Compression Implementation
 
 A complete, production-ready **Huffman compression/decompression** tool written in C.
 
@@ -39,7 +39,16 @@ Input file → frequency counting → build Huffman tree → generate codes
 Compressed input → read header → reconstruct tree → bitstream decode → Output file
 ```
 
-### Header Format
+### File Format & Versioning
+
+Compressed files use magic bytes `"SHI<version>"` (4B) where the 4th byte encodes the format version. Decompression validates the magic and dispatches to the appropriate version handler.
+
+| Version | Magic | Description |
+|---------|-------|-------------|
+| 0 (0x00) | `SHI\x00` | Current format — per-symbol code storage |
+| 1 (0x01) | `SHI\x01` | Planned — flat tree header (see [Roadmap](docs/Roadmap.md)) |
+
+### Header Format (v0)
 
 The compressed file header stores:
 
@@ -53,7 +62,7 @@ The compressed file header stores:
 - **Language**: C99
 - **Build System**: CMake 3.15+ (primary and only build system)
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: CTest — 7 test executables, 29 test cases
+- **Testing**: CTest — 9 test executables, 69 test cases
 
 ## Prerequisites
 
@@ -149,6 +158,8 @@ cmake --build . --target run-test-compress
 | `test_list` | `run-test-test_list` | Linked list (5 tests) |
 | `test_tree` | `run-test-test_tree` | Huffman tree (3 tests) |
 | `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
+| `test_decompress_version` | `run-test-test_decompress_version` | Version handling in decompression (10 tests) |
+| `test_args` | `run-test-test_args` | CLI argument parsing (20 tests) |
 
 ### Test Output
 
@@ -174,6 +185,25 @@ ctest --test-dir build -C Release --output-on-failure
 ./shi decompress output.huf recovered.txt
 ```
 
+### Options
+
+```bash
+# Specify file format version (default: 0)
+./shi --version 0 compress input.txt output.huf
+
+# Verbose output
+./shi -v compress input.txt output.huf
+
+# Show help
+./shi --help
+```
+
+| Option | Description |
+|--------|-------------|
+| `--version <N>` | Compress/decompress using format version N (default: 0) |
+| `-v, --verbose` | Enable verbose output |
+| `-h, --help` | Show help message |
+
 ## Project Status
 
 **Core Implementation: Complete** ✅
@@ -181,21 +211,22 @@ ctest --test-dir build -C Release --output-on-failure
 - ✅ Full compression pipeline (`compress_file()`)
 - ✅ Full decompression pipeline (`decompress_file()`)
 - ✅ Error handling with NULL checks and status codes throughout
-- ✅ All 7 test suites passing (100%)
+- ✅ All 9 test suites passing (100%)
 - ✅ Magic byte validation on decompression
 
 ### Known Limitations
 
 - Single-symbol edge case is handled but could be more robust
-- No `--verbose` / progress output option yet
 - Entire file is loaded into memory for frequency analysis (fine for the 256-byte alphabet)
 
 ### Future Enhancements (v2+)
 
-- Command-line options: custom buffer sizes, `--verbose`, stdin/stdout support
+- Custom buffer sizes via CLI
+- stdin/stdout support
 - Unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`
 - Integration tests with known-good compressed output
 - Performance optimization: switch from insertion sort to heapsort in tree building
+- **Flat tree header (v1)** — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
 
 ## File Index
 
@@ -203,7 +234,8 @@ ctest --test-dir build -C Release --output-on-failure
 include/
 ├── core/
 │   ├── compress.h      — compress_file, write_header, compress_data, read_header, etc.
-│   └── decompress.h    — decompress_file, reconstruct_tree_from_codes
+│   ├── decompress.h    — decompress_file, reconstruct_tree_from_codes
+│   └── version.h       — version constants, magic bytes, per-version dispatch
 ├── data_structures/
 │   ├── bitarray.h      — bit array operations
 │   ├── bitstream.h     — bit-level reader + writer
@@ -231,16 +263,21 @@ src/
 ├── utils/
 │   ├── metric.c
 │   └── sort.c
-└── main.c              — CLI entry point
+├── cli/
+│   ├── args.c          — CLI argument parsing (version, verbose, help, flags)
+│   └── args.h          — CLI args API (shi_args_t, shi_parse_args, etc.)
+└── main.c              — CLI entry point (command dispatch)
 
 tests/
-├── test_compress.c     — 3 tests (roundtrip, empty, repeated)
+├── test_compress.c     — 13 tests (roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
 ├── test_bitstream.c    — 7 tests (reader/writer, EOF, NULL)
 ├── test_file_reader.c  — 5 tests
 ├── test_file_writer.c  — 4 tests
 ├── test_list.c         — 5 tests
 ├── test_tree.c         — 3 tests
 ├── test_utils.c        — 2 tests
+├── test_decompress_version.c — 10 tests (version handling in decompression)
+├── test_args.c         — 20 tests (CLI argument parsing)
 └── test_helpers.h      — temp files, comparison, macros
 
 docs/
