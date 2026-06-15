@@ -1,5 +1,40 @@
 # Changelog
 
+## Phase 3 — File Format Versioning (Completed) ✅
+
+Established infrastructure for multiple file format versions.
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `include/core/version.h` | **Added** — version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions (`SHI_MAGIC_V0`, `shi_magic_v0[]`), per-version entry point declarations (`shi_compress_v0`, `shi_decompress_v0`), `shi_detect_version()` declaration |
+| `src/main.c` | **Modified** — added `#include "core/version.h"`, `--version <N>` argument parsing with bounds checking, `switch(version)` compress dispatch, magic byte detection + `switch(detected_version)` decompress dispatch |
+| `src/core/compress.c` | **Modified** — added `shi_magic_v0[]` definition, `shi_compress_v0()` wrapper delegating to `compress_file()` |
+| `src/core/decompress.c` | **Modified** — added `shi_decompress_v0()` wrapper delegating to `decompress_file()` |
+
+### CLI
+
+```
+Usage: shi [--version <N>] <compress|decompress> <input_file> <output_file>
+
+Options:
+  --version <N>    Compress/decompress using format version N (default: 0)
+  -v, --verbose    Enable verbose output
+  -h, --help       Show this help message
+```
+
+### File Format
+
+Magic bytes now encode the version in the 4th byte: `"SHI<version>"`
+
+| Version | Magic | Description |
+|---------|-------|-------------|
+| 0 (0x00) | `SHI\x00` | Current format — per-symbol code storage |
+| 1 (0x01) | `SHI\x01` | Planned — flat tree header (see Roadmap) |
+
+---
+
 ## Phase 1 — Bug Fixes & Polish (Completed)
 
 ### Completed Issues

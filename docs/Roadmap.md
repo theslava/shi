@@ -30,7 +30,29 @@ All Phase 2 items completed. See [Changelog](docs/Changelog.md) for details.
 - ✅ K&R `()` → `void` fix for Clang compatibility
 - ✅ Warning analysis documented: GCC 0 warnings, Clang 2 warnings (pre-C23 only)
 
-## Phase 3 — Testing Improvements
+## Phase 3 — File Format Versioning (Completed) ✅
+
+Established the infrastructure for multiple file format versions, enabling future format evolution without breaking existing files.
+
+### Completed Items
+
+- ✅ Created `include/core/version.h` — version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions per version, per-version entry point declarations, `shi_detect_version()` declaration
+- ✅ Added `--version <N>` CLI argument with bounds checking (default: 0)
+- ✅ Compress path: `switch(version)` dispatches to `shi_compress_vN()` based on the `--version` argument
+- ✅ Decompress path: reads 4th magic byte, validates `"SHI"` prefix, `switch(detected_version)` dispatches to `shi_decompress_vN()`
+- ✅ Added `shi_compress_v0()` and `shi_decompress_v0()` wrapper functions delegating to existing `compress_file()` / `decompress_file()`
+- ✅ All 7 test suites passing; functional roundtrip verified
+
+### Future Version Work
+
+| Version | Status | Description |
+|---------|--------|-------------|
+| v0 (0x00) | ✅ Done | Current format: per-symbol code storage |
+| v1 (0x01) | 📋 Planned | Flat tree header (see Section 6 below) |
+
+---
+
+## Phase 4 — Testing Improvements
 
 - [ ] Write unit tests for `generate_codes()` specifically
 - [ ] Write unit tests for `reconstruct_tree_from_codes()` specifically
@@ -48,7 +70,7 @@ All Phase 2 items completed. See [Changelog](docs/Changelog.md) for details.
 
 This section describes the planned changes for v1.0, which replaces the current per-symbol code storage with a serialized flat tree in the header.
 
-### 6.1 New File Header Format (Version 0x01)
+### 7.1 New File Header Format (Version 0x01)
 
 ```
 [magic: 4B "SHI<version>"]
@@ -62,7 +84,7 @@ This section describes the planned changes for v1.0, which replaces the current 
 | **num_nodes** | 4B LE | Count of nodes in the flat array. |
 | **Node stream** | Variable | Bit-packed 19-bit nodes, MSB-first. |
 
-### 6.2 Node Format (19 bits per node)
+### 7.2 Node Format (19 bits per node)
 
 Each node is packed as:
 
@@ -78,7 +100,7 @@ Each node is packed as:
 - Valid child indices are > 0
 - Max nodes: 511 (256 leaves + 255 internal nodes), which fits in 9 bits (511 < 512)
 
-### 6.3 New Functions
+### 7.3 New Functions
 
 #### `serialize_tree_to_bitstream(tree, bs)`
 - **Location:** `src/data_structures/tree.c` / `include/data_structures/tree.h`
@@ -102,7 +124,7 @@ Each node is packed as:
 - `bsw_write_flat_node(bitstream_writer *bs, FlatNode *node)` — writes 19-bit node
 - `bs_read_flat_node(bitstream *bs, FlatNode *node)` — reads 19-bit node
 
-### 6.4 Updated Functions
+### 7.4 Updated Functions
 
 #### `write_header()` in `src/core/compress.c`
 - Write magic bytes `"SHI\x01"` (4B)
@@ -126,19 +148,19 @@ Each node is packed as:
   - If `nodes[current].left == 0 && nodes[current].right == 0`: output `nodes[current].byte`, reset `current = 0` (root)
 - Stop when `file_size` symbols have been output
 
-### 6.5 Removed/Deprecated
+### 7.5 Removed/Deprecated
 
 - **`reconstruct_tree_from_codes()`** — no longer needed
 - Canonical Huffman code length approach — replaced by direct node serialization
 - Tree allocation during decompression — replaced by flat array
 
-### 6.6 Edge Cases
+### 7.6 Edge Cases
 
 - **Single-symbol file:** `num_nodes = 1`, root is a leaf (`left == right == 0`). Decoder outputs that byte for every symbol, ignoring bit patterns.
 - **Empty file:** `num_nodes = 0`, no nodes written. Handled as before.
 - **`num_nodes > 511`:** Return error (technically impossible with 256-symbol alphabet, but defensive coding).
 
-### 6.7 Testing
+### 7.7 Testing
 
 - **New test:** Verify flat tree header roundtrip (compress → decompress with new header format produces identical output)
 - Update existing `test_compress.c` to cover the new header format
@@ -146,7 +168,7 @@ Each node is packed as:
 - Test empty file edge case
 - Test large alphabets (many unique symbols)
 
-### 6.8 File Index Changes
+### 7.8 File Index Changes
 
 | File | Change |
 |------|--------|
@@ -158,7 +180,7 @@ Each node is packed as:
 | `include/core/decompress.h` | Update decompressor state to include flat tree array |
 | `tests/test_compress.c` | Add test for new flat tree header roundtrip |
 
-### 6.9 Benefits
+### 7.9 Benefits
 
 - **No tree reconstruction during decompression** — skips allocation and tree building
 - **Faster decompression** — linear array traversal with integer indices, better cache locality

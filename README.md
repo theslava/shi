@@ -39,7 +39,16 @@ Input file → frequency counting → build Huffman tree → generate codes
 Compressed input → read header → reconstruct tree → bitstream decode → Output file
 ```
 
-### Header Format
+### File Format & Versioning
+
+Compressed files use magic bytes `"SHI<version>"` (4B) where the 4th byte encodes the format version. Decompression validates the magic and dispatches to the appropriate version handler.
+
+| Version | Magic | Description |
+|---------|-------|-------------|
+| 0 (0x00) | `SHI\x00` | Current format — per-symbol code storage |
+| 1 (0x01) | `SHI\x01` | Planned — flat tree header (see [Roadmap](docs/Roadmap.md)) |
+
+### Header Format (v0)
 
 The compressed file header stores:
 
@@ -174,6 +183,25 @@ ctest --test-dir build -C Release --output-on-failure
 ./shi decompress output.huf recovered.txt
 ```
 
+### Options
+
+```bash
+# Specify file format version (default: 0)
+./shi --version 0 compress input.txt output.huf
+
+# Verbose output
+./shi -v compress input.txt output.huf
+
+# Show help
+./shi --help
+```
+
+| Option | Description |
+|--------|-------------|
+| `--version <N>` | Compress/decompress using format version N (default: 0) |
+| `-v, --verbose` | Enable verbose output |
+| `-h, --help` | Show help message |
+
 ## Project Status
 
 **Core Implementation: Complete** ✅
@@ -187,15 +215,16 @@ ctest --test-dir build -C Release --output-on-failure
 ### Known Limitations
 
 - Single-symbol edge case is handled but could be more robust
-- No `--verbose` / progress output option yet
 - Entire file is loaded into memory for frequency analysis (fine for the 256-byte alphabet)
 
 ### Future Enhancements (v2+)
 
-- Command-line options: custom buffer sizes, `--verbose`, stdin/stdout support
+- Custom buffer sizes via CLI
+- stdin/stdout support
 - Unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`
 - Integration tests with known-good compressed output
 - Performance optimization: switch from insertion sort to heapsort in tree building
+- **Flat tree header (v1)** — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
 
 ## File Index
 
@@ -203,7 +232,8 @@ ctest --test-dir build -C Release --output-on-failure
 include/
 ├── core/
 │   ├── compress.h      — compress_file, write_header, compress_data, read_header, etc.
-│   └── decompress.h    — decompress_file, reconstruct_tree_from_codes
+│   ├── decompress.h    — decompress_file, reconstruct_tree_from_codes
+│   └── version.h       — version constants, magic bytes, per-version dispatch
 ├── data_structures/
 │   ├── bitarray.h      — bit array operations
 │   ├── bitstream.h     — bit-level reader + writer
