@@ -15,6 +15,7 @@
 | `compress.c / compress.h` | High-level compression pipeline: `compress_file()`, `write_header()`, `compress_data()`, `shi_compress_v0()` |
 | `decompress.c / decompress.h` | High-level decompression pipeline: `decompress_file()`, `read_header()`, `reconstruct_tree_from_codes()`, `decompress_data()`, `shi_decompress_v0()` |
 | `version.h` | Version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions, per-version entry point declarations, `shi_detect_version()` |
+| `args.c / args.h` | CLI argument parsing — zero-dependency manual parser supporting short/long flags, combined flags (`-vh`), `--` separator, unknown flag detection |
 
 ## Data Flow
 
@@ -77,13 +78,18 @@ src/
 │   └── tree.c          ✓ complete
 ├── io/
 │   └── file_io.c       ✓ complete
-├── main.c              ✓ complete
+├── cli/
+│   ├── args.c          ✓ complete (argument parsing)
+│   └── args.h          ✓ complete (API)
+├── main.c              ✓ complete (command dispatch)
 └── utils/
     ├── metric.c        ✓ complete
     └── sort.c          ✓ complete
 
 tests/
 ├── test_compress.c     ✓ complete (13 tests: roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
+├── test_decompress_version.c ✓ complete (10 tests: version handling)
+├── test_args.c         ✓ complete (20 tests: CLI argument parsing)
 ├── test_helpers.h      ✓ complete
 ├── test_bitstream.c    ✓ complete (7 tests: reader/writer, EOF, NULL)
 ├── test_file_reader.c  ✓ complete (5 tests)

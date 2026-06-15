@@ -43,9 +43,32 @@ Established the infrastructure for multiple file format versions, enabling futur
 - ✅ Added `shi_compress_v0()` and `shi_decompress_v0()` wrapper functions delegating to existing `compress_file()` / `decompress_file()`
 - ✅ All 7 test suites passing; functional roundtrip verified
 
-### Future Version Work
+### Phase 3.1 — CLI Argument Parsing Refactoring (Completed) ✅
 
-| Version | Status | Description |
+Extracted the inline argument parsing from `src/main.c` into a dedicated module `src/cli/args.c` / `include/cli/args.h` for cleaner separation of concerns and testability.
+
+- ✅ `src/cli/args.c` — Zero-dependency manual parser supporting short (`-v`), long (`--verbose`), combined (`-vh`), and `--` separator flags
+- ✅ `include/cli/args.h` — Public API (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`)
+- ✅ `tests/test_args.c` — 20 tests covering every flag, error path, and edge case
+- ✅ `src/main.c` reduced from 124 → ~75 lines (40% smaller)
+- ✅ Unknown flag detection (`--bogus` → error, was silently misinterpreted)
+- ✅ Combined short flags (`-vh` → `-v` then `-h`)
+- ✅ `--` to stop flag parsing
+- ✅ NULL-safe input handling
+- ✅ Detailed per-error messages
+
+---
+
+## Phase 4 — Testing Improvements
+
+- [ ] Write unit tests for `generate_codes()` specifically
+- [ ] Write unit tests for `reconstruct_tree_from_codes()` specifically
+- [ ] Add tests for edge cases: empty file, single-byte file, all-same-byte file, binary data
+- [ ] Add integration tests with known-good compressed output
+
+## Phase 4 — Future Enhancements (Out of Scope for v1)
+
+- [ ] Add command-line option for custom buffer sizes
 |---------|--------|-------------|
 | v0 (0x00) | ✅ Done | Current format: per-symbol code storage |
 | v1 (0x01) | 📋 Planned | Flat tree header (see Section 6 below) |
@@ -61,7 +84,7 @@ Established the infrastructure for multiple file format versions, enabling futur
 
 ## Phase 4 — Future Enhancements (Out of Scope for v1)
 
-- [ ] Add command-line options for custom buffer sizes, verbose output
+- [ ] Add command-line option for custom buffer sizes
 - [ ] Support for reading from stdin / writing to stdout
 - [ ] Add `ba_write_to_file()` implementation for bitarray persistence
 - [ ] Consider switching from insertion sort to heapsort in `new_tree_from_metric()` for better performance

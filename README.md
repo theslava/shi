@@ -1,4 +1,4 @@
-# shi — Huffman Compression Implementation
+﻿# shi — Huffman Compression Implementation
 
 A complete, production-ready **Huffman compression/decompression** tool written in C.
 
@@ -62,7 +62,7 @@ The compressed file header stores:
 - **Language**: C99
 - **Build System**: CMake 3.15+ (primary and only build system)
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: CTest — 7 test executables, 29 test cases
+- **Testing**: CTest — 9 test executables, 69 test cases
 
 ## Prerequisites
 
@@ -158,6 +158,8 @@ cmake --build . --target run-test-compress
 | `test_list` | `run-test-test_list` | Linked list (5 tests) |
 | `test_tree` | `run-test-test_tree` | Huffman tree (3 tests) |
 | `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
+| `test_decompress_version` | `run-test-test_decompress_version` | Version handling in decompression (10 tests) |
+| `test_args` | `run-test-test_args` | CLI argument parsing (20 tests) |
 
 ### Test Output
 
@@ -209,7 +211,7 @@ ctest --test-dir build -C Release --output-on-failure
 - ✅ Full compression pipeline (`compress_file()`)
 - ✅ Full decompression pipeline (`decompress_file()`)
 - ✅ Error handling with NULL checks and status codes throughout
-- ✅ All 7 test suites passing (100%)
+- ✅ All 9 test suites passing (100%)
 - ✅ Magic byte validation on decompression
 
 ### Known Limitations
@@ -261,16 +263,21 @@ src/
 ├── utils/
 │   ├── metric.c
 │   └── sort.c
-└── main.c              — CLI entry point
+├── cli/
+│   ├── args.c          — CLI argument parsing (version, verbose, help, flags)
+│   └── args.h          — CLI args API (shi_args_t, shi_parse_args, etc.)
+└── main.c              — CLI entry point (command dispatch)
 
 tests/
-├── test_compress.c     — 3 tests (roundtrip, empty, repeated)
+├── test_compress.c     — 13 tests (roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
 ├── test_bitstream.c    — 7 tests (reader/writer, EOF, NULL)
 ├── test_file_reader.c  — 5 tests
 ├── test_file_writer.c  — 4 tests
 ├── test_list.c         — 5 tests
 ├── test_tree.c         — 3 tests
 ├── test_utils.c        — 2 tests
+├── test_decompress_version.c — 10 tests (version handling in decompression)
+├── test_args.c         — 20 tests (CLI argument parsing)
 └── test_helpers.h      — temp files, comparison, macros
 
 docs/

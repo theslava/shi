@@ -6,14 +6,15 @@ Implement a complete **Huffman compression/decompression** tool in C with a focu
 
 ## Current Phase
 
-### Phase 2: Edge Cases & Robustness
+### Phase 3 — File Format Versioning (Completed) ✅
+
+All core functionality, versioning infrastructure, and CLI argument parsing are complete.
 
 ## Immediate Next Steps
 
-1. Handle single-symbol input more robustly.
-2. Validate header integrity on decompression.
-3. Add `--verbose` flag for progress/logging.
-4. Address compiler warnings (`-Wall -Wextra`).
+1. Implement Phase 4 (Flat Tree Header v1.0) — see [Roadmap](docs/Roadmap.md) Section 7
+2. Write unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`
+3. Add integration tests with known-good compressed output
 
 ## Documentation Structure
 
