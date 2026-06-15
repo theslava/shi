@@ -53,7 +53,7 @@ The compressed file header stores:
 - **Language**: C99
 - **Build System**: CMake 3.15+ (primary and only build system)
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: CTest — 7 test executables, 20+ test cases
+- **Testing**: CTest — 7 test executables, 29 test cases
 
 ## Prerequisites
 

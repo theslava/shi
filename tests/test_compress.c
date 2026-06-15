@@ -232,6 +232,203 @@ static int test_compress_single_byte_null(void) {
     return 0;
 }
 
+/* ==========================================================================
+ * Header Validation Tests
+ * ========================================================================== */
+
+/* Helper: write a valid minimal compressed file (1 symbol, 1 byte 'A') */
+static int write_minimal_compressed(const char* path) {
+    FILE* fp = fopen(path, "wb");
+    TEST_ASSERT(fp != NULL, "created minimal compressed file");
+
+    /* Magic: "SHI\x00" */
+    unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    fwrite(magic, 1, 4, fp);
+
+    /* num_symbols = 1 (LE) */
+    unsigned char num_sym[4] = {1, 0, 0, 0};
+    fwrite(num_sym, 1, 4, fp);
+
+    /* file_size = 1 (LE) */
+    unsigned char fsize[4] = {1, 0, 0, 0};
+    fwrite(fsize, 1, 4, fp);
+
+    /* Symbol: byte_value=65 ('A'), code_length=1, code_value=0 */
+    unsigned char sym[6] = {65, 1, 0, 0, 0, 0};
+    fwrite(sym, 1, 6, fp);
+
+    /* Bitstream: 1 byte (code '0' padded) */
+    unsigned char bitstream[1] = {0x00};
+    fwrite(bitstream, 1, 1, fp);
+
+    fclose(fp);
+    return 0;
+}
+
+/* Test: Corrupted magic bytes → decompress returns error */
+static int test_decompress_corrupted_magic(void) {
+    TEST_START("decompress with corrupted magic bytes");
+
+    const char* input = "test_bad_magic.huf";
+    const char* output = "test_bad_magic_out.txt";
+
+    /* Write a file with wrong magic bytes */
+    FILE* fp = fopen(input, "wb");
+    TEST_ASSERT(fp != NULL, "created file with bad magic");
+    unsigned char bad_magic[4] = {0x00, 0x00, 0x00, 0x00};
+    fwrite(bad_magic, 1, 4, fp);
+    fclose(fp);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress with bad magic returns error");
+
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
+/* Test: Truncated header (file ends mid-header) → decompress returns error */
+static int test_decompress_truncated_header(void) {
+    TEST_START("decompress with truncated header");
+
+    const char* input = "test_truncated.huf";
+    const char* output = "test_truncated_out.txt";
+
+    /* Write a file with only magic + 1 byte of header */
+    FILE* fp = fopen(input, "wb");
+    TEST_ASSERT(fp != NULL, "created truncated file");
+    unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    fwrite(magic, 1, 4, fp);
+    unsigned char partial[1] = {0x01}; /* start of num_symbols, but no more */
+    fwrite(partial, 1, 1, fp);
+    fclose(fp);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress truncated header returns error");
+
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
+/* Test: num_symbols = 0 (no symbols in header) → decompress returns error */
+static int test_decompress_zero_symbols(void) {
+    TEST_START("decompress with num_symbols = 0");
+
+    const char* input = "test_zero_sym.huf";
+    const char* output = "test_zero_sym_out.txt";
+
+    FILE* fp = fopen(input, "wb");
+    TEST_ASSERT(fp != NULL, "created zero-symbols file");
+    unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    fwrite(magic, 1, 4, fp);
+    unsigned char num_sym[4] = {0, 0, 0, 0}; /* num_symbols = 0 */
+    fwrite(num_sym, 1, 4, fp);
+    fclose(fp);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress with num_symbols=0 returns error");
+
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
+/* Test: num_symbols = 257 (out of range) → decompress returns error */
+static int test_decompress_invalid_num_symbols(void) {
+    TEST_START("decompress with num_symbols out of range");
+
+    const char* input = "test_bad_num_sym.huf";
+    const char* output = "test_bad_num_sym_out.txt";
+
+    FILE* fp = fopen(input, "wb");
+    TEST_ASSERT(fp != NULL, "created out-of-range symbols file");
+    unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    fwrite(magic, 1, 4, fp);
+    unsigned char num_sym[4] = {1, 1, 0, 0}; /* num_symbols = 257 (LE) */
+    fwrite(num_sym, 1, 4, fp);
+    fclose(fp);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress with num_symbols=257 returns error");
+
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
+/* Test: Truncated compressed data (header valid but data cut short) → decompress returns error */
+static int test_decompress_truncated_data(void) {
+    TEST_START("decompress with truncated data");
+
+    const char* input = "test_truncated_data.huf";
+    const char* output = "test_truncated_data_out.txt";
+
+    /* First write a valid compressed file */
+    const char* valid = "test_truncated_data_valid.huf";
+    write_minimal_compressed(valid);
+
+    /* Now read it and truncate it */
+    FILE* fp_in = fopen(valid, "rb");
+    TEST_ASSERT(fp_in != NULL, "opened valid compressed file");
+    unsigned char buf[256];
+    size_t total = 0;
+    while (!feof(fp_in)) {
+        size_t n = fread(buf + total, 1, 1, fp_in);
+        if (n == 0)
+            break;
+        total += n;
+    }
+    fclose(fp_in);
+
+    /* Truncate to only the magic + header, no bitstream */
+    FILE* fp_out = fopen(input, "wb");
+    TEST_ASSERT(fp_out != NULL, "created truncated data file");
+    fwrite(buf, 1, 13, fp_out); /* magic(4) + num_sym(4) + fsize(4) + symbol(1) = 13 */
+    fclose(fp_out);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress truncated data returns error");
+
+    remove(valid);
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
+/* Test: Empty file (only magic bytes, nothing else) → decompress returns error */
+static int test_decompress_empty_file(void) {
+    TEST_START("decompress with empty file (only magic)");
+
+    const char* input = "test_empty.huf";
+    const char* output = "test_empty_out.txt";
+
+    FILE* fp = fopen(input, "wb");
+    TEST_ASSERT(fp != NULL, "created empty file");
+    unsigned char magic[4] = {0x53, 0x48, 0x49, 0x00};
+    fwrite(magic, 1, 4, fp);
+    fclose(fp);
+
+    int result = decompress_file(input, output);
+    TEST_ASSERT(result != 0, "decompress empty file returns error");
+
+    remove(input);
+    remove(output);
+
+    TEST_END;
+    return 0;
+}
+
 int main(void) {
     printf("=== Compression Test Suite ===\n\n");
 
@@ -244,6 +441,13 @@ int main(void) {
     failures += test_compress_single_symbol();
     failures += test_compress_binary();
     failures += test_compress_single_byte_null();
+
+    failures += test_decompress_corrupted_magic();
+    failures += test_decompress_truncated_header();
+    failures += test_decompress_zero_symbols();
+    failures += test_decompress_invalid_num_symbols();
+    failures += test_decompress_truncated_data();
+    failures += test_decompress_empty_file();
 
     printf("\n=== Results: %s test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
 

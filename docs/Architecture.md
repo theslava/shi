@@ -81,7 +81,7 @@ src/
     └── sort.c          ✓ complete
 
 tests/
-├── test_compress.c     ✓ complete (3 tests: roundtrip, empty, repeated)
+├── test_compress.c     ✓ complete (13 tests: roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
 ├── test_helpers.h      ✓ complete
 ├── test_bitstream.c    ✓ complete (7 tests: reader/writer, EOF, NULL)
 ├── test_file_reader.c  ✓ complete (5 tests)
