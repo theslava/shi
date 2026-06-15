@@ -8,8 +8,12 @@
 #include "data_structures/tree.h"
 #include "data_structures/bitstream.h"
 #include "core/compress.h"
+#include "core/version.h"
 
 #define MAGIC_BYTES "\x53\x48\x49\x00"
+
+/* Magic bytes for version 0 (SHI\x00) */
+const unsigned char shi_magic_v0[4] = {0x53, 0x48, 0x49, 0x00};
 
 static int verbose = 0;
 
@@ -209,4 +213,12 @@ int compress_data(fr_fd* input_fd,
     bsw_flush(bsw);
     bsw_done(bsw);
     return 0;
+}
+
+/* ==========================================================================
+ * Version-specific compression entry point (v0)
+ * ========================================================================== */
+
+int shi_compress_v0(const char* input_file, const char* output_file) {
+    return compress_file(input_file, output_file);
 }

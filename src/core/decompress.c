@@ -9,6 +9,7 @@
 #include "data_structures/bitstream.h"
 #include "core/decompress.h"
 #include "core/compress.h"
+#include "core/version.h"
 
 /* ==========================================================================
  * High-level decompression entry point
@@ -282,4 +283,12 @@ int decompress_data(fr_fd* input_fd, fw_fd* output_fd, node* tree_root, unsigned
     bs_done(bs);
 
     return 0;
+}
+
+/* ==========================================================================
+ * Version-specific decompression entry point (v0)
+ * ========================================================================== */
+
+int shi_decompress_v0(const char* input_file, const char* output_file) {
+    return decompress_file(input_file, output_file);
 }
