@@ -4,23 +4,31 @@
 
 All core functionality implemented and tested. See [Changelog](docs/Changelog.md) for details.
 
-## Phase 2 — Edge Cases & Robustness (Current)
+## Phase 2 — Edge Cases & Robustness (Completed) ✅
 
-### Phase 2.1 — Codebase Restructuring (Completed) ✅
+All Phase 2 items completed. See [Changelog](docs/Changelog.md) for details.
+
+### Phase 2.1 — Codebase Restructuring
 
 - ✅ All headers refactored: consistent formatting, documented APIs
 - ✅ All source files refactored: improved types, error handling
 - ✅ All tests refactored: improved helpers, better assertions
 - ✅ All 7 test suites passing
 
-### Phase 2.2 — Edge Cases, Robustness & Code Quality (Completed) ✅
+### Phase 2.2 — Edge Cases, Robustness & Code Quality
 
 - ✅ Added `--verbose` flag for progress/logging output
 - ✅ Very large files already handled — file is streamed byte-by-byte via buffered reader, never loaded entirely into memory
 - ✅ GCC produces 0 warnings with `-Wall -Wextra -Wpedantic` under C23 (Clang 22 produces 0 warnings under C23; 2 warnings under pre-C23 due to K&R `()` deprecation)
 - ✅ Single-symbol input already tested — `test_compress_single_symbol` in `tests/test_compress.c` (50 bytes of 'X', roundtrip verified)
 - ✅ Header integrity validation on decompression — tested with 6 corrupted-file scenarios: bad magic, truncated header, num_symbols=0, num_symbols out of range, truncated data, empty file (all return error)
-- ✅ **Phase 2.3 — License & Standards:** See [Changelog](docs/Changelog.md) for details (GPL→public domain, C99→C23, K&R `()` fix, warning analysis)
+
+### Phase 2.3 — License & Standards
+
+- ✅ GPL → public domain (Unlicense) across all source files
+- ✅ C99 → C23 standard migration
+- ✅ K&R `()` → `void` fix for Clang compatibility
+- ✅ Warning analysis documented: GCC 0 warnings, Clang 2 warnings (pre-C23 only)
 
 ## Phase 3 — Testing Improvements
 
