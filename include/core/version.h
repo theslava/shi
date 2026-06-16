@@ -28,6 +28,9 @@
 #define SHI_MAGIC_V0 "\x53\x48\x49\x00"
 #define SHI_MAGIC_V0_LEN 4
 
+/* File extension for compressed files */
+#define SHI_COMPRESSED_EXT ".shi"
+
 /* Magic byte arrays for direct comparison */
 extern const unsigned char shi_magic_v0[4];
 

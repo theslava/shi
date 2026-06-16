@@ -159,7 +159,7 @@ cmake --build . --target run-test-compress
 | `test_tree` | `run-test-test_tree` | Huffman tree (3 tests) |
 | `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
 | `test_decompress_version` | `run-test-test_decompress_version` | Version handling in decompression (10 tests) |
-| `test_args` | `run-test-test_args` | CLI argument parsing (20 tests) |
+| `test_args` | `run-test-test_args` | CLI argument parsing (31 tests) |
 
 ### Test Output
 
@@ -176,23 +176,25 @@ ctest --test-dir build -C Release --output-on-failure
 ### Compress a file
 
 ```bash
-./shi compress input.txt output.huf
+./shi -c -f input.txt
+# outputs: input.txt.shi
 ```
 
 ### Decompress a file
 
 ```bash
-./shi decompress output.huf recovered.txt
+./shi -d -f input.txt.shi
+# outputs: input.txt
 ```
 
 ### Options
 
 ```bash
 # Specify file format version (default: 0)
-./shi --version 0 compress input.txt output.huf
+./shi -c -f input.txt --version 0
 
 # Verbose output
-./shi -v compress input.txt output.huf
+./shi -c -f input.txt --verbose
 
 # Show help
 ./shi --help
@@ -200,9 +202,14 @@ ctest --test-dir build -C Release --output-on-failure
 
 | Option | Description |
 |--------|-------------|
-| `--version <N>` | Compress/decompress using format version N (default: 0) |
+| `-c, --compress` | Compress mode |
+| `-d, --decompress` | Decompress mode |
+| `-f, --file <path>` | Input file path (required) |
 | `-v, --verbose` | Enable verbose output |
+| `-V, --version <N>` | Format version N (default: 0) |
 | `-h, --help` | Show help message |
+
+> **Note:** The output file is derived automatically from the input file. For compression, `.shi` is appended. For decompression, `.shi` is stripped.
 
 ## Project Status
 

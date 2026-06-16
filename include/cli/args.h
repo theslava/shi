@@ -33,11 +33,10 @@ typedef enum {
 
 /* Parsed CLI arguments */
 typedef struct {
-    int verbose;             /* 1 if -v/--verbose was set */
-    int version;             /* Format version (default: SHI_CURRENT_VERSION) */
-    shi_command_t command;   /* Compress or decompress */
-    const char* input_file;  /* Positional: input file path */
-    const char* output_file; /* Positional: output file path */
+    shi_command_t command;  /* CMD_COMPRESS or CMD_DECOMPRESS */
+    int verbose;            /* 1 if -v/--verbose was set */
+    int version;            /* Format version (default: SHI_CURRENT_VERSION) */
+    const char* input_file; /* Input file path (from -f/--file) */
 } shi_args_t;
 
 /* ---------------------------------------------------------------------------
@@ -53,13 +52,23 @@ void shi_print_usage(const char* prog);
 /**
  * Parse command-line arguments.
  *
- * Supported flags (must appear before positional args):
- *   --version <N>    Format version (default: SHI_CURRENT_VERSION)
- *   -v, --verbose    Enable verbose output
- *   -h, --help       Show help and exit
- *   --               Stop flag parsing (flags after -- are treated as positional)
+ * Supported flags (order does not matter):
+ *   -c, --compress     Compress mode
+ *   -d, --decompress   Decompress mode
+ *   -f, --file <path>  Input file path (required)
+ *   -v, --verbose      Enable verbose output
+ *   -V, --version <N>  Format version (default: SHI_CURRENT_VERSION)
+ *   -h, --help         Show help and exit
+ *   --                 Stop flag parsing
  *
  * Combined short flags are supported: -vh is equivalent to -v -h.
+ *
+ * Exactly one of -c/--compress or -d/--decompress must be provided.
+ * Exactly one -f/--file must be provided.
+ *
+ * The output file is derived automatically from the input file:
+ *   - Compress: appends ".shi" to the input path.
+ *   - Decompress: strips ".shi" from the input path.
  *
  * @param argc  Argument count (from main).
  * @param argv  Argument vector (from main).

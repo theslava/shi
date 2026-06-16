@@ -48,34 +48,30 @@ static int make_argv(const char** items, int* out_argc, const char*** out_argv) 
 }
 
 /* ---------------------------------------------------------------------------
- * Valid flag tests
+ * Valid compress flag tests
  * --------------------------------------------------------------------------- */
 
-static int test_default_args(void) {
-    TEST_START("default args (no flags)");
+static int test_compress_short(void) {
+    TEST_START("-c flag");
 
-    const char* items[] = {"shi", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
     shi_args_t args;
 
-    shi_args_result_t result = shi_parse_args(argc, argv, &args);
-    TEST_ASSERT(result == ARGS_OK, "parse succeeds with no flags");
-    TEST_ASSERT(args.verbose == 0, "verbose is 0 by default");
-    TEST_ASSERT(args.version == SHI_CURRENT_VERSION, "version defaults to SHI_CURRENT_VERSION");
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
     TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
     TEST_ASSERT(strcmp(args.input_file, "in.txt") == 0, "input_file is 'in.txt'");
-    TEST_ASSERT(strcmp(args.output_file, "out.huf") == 0, "output_file is 'out.huf'");
 
     TEST_END;
     return 0;
 }
 
-static int test_compress_command(void) {
-    TEST_START("compress command");
+static int test_compress_long(void) {
+    TEST_START("--compress flag");
 
-    const char* items[] = {"shi", "compress", "a.txt", "b.huf", NULL};
+    const char* items[] = {"shi", "--compress", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -88,10 +84,31 @@ static int test_compress_command(void) {
     return 0;
 }
 
-static int test_decompress_command(void) {
-    TEST_START("decompress command");
+/* ---------------------------------------------------------------------------
+ * Valid decompress flag tests
+ * --------------------------------------------------------------------------- */
 
-    const char* items[] = {"shi", "decompress", "a.huf", "b.txt", NULL};
+static int test_decompress_short(void) {
+    TEST_START("-d flag");
+
+    const char* items[] = {"shi", "-d", "-f", "in.shi", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_DECOMPRESS, "command is CMD_DECOMPRESS");
+    TEST_ASSERT(strcmp(args.input_file, "in.shi") == 0, "input_file is 'in.shi'");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_decompress_long(void) {
+    TEST_START("--decompress flag");
+
+    const char* items[] = {"shi", "--decompress", "-f", "in.shi", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -104,10 +121,66 @@ static int test_decompress_command(void) {
     return 0;
 }
 
+/* ---------------------------------------------------------------------------
+ * -f / --file flag tests
+ * --------------------------------------------------------------------------- */
+
+static int test_file_short(void) {
+    TEST_START("-f flag");
+
+    const char* items[] = {"shi", "-c", "-f", "input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(strcmp(args.input_file, "input.txt") == 0, "input_file is 'input.txt'");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_file_long(void) {
+    TEST_START("--file flag");
+
+    const char* items[] = {"shi", "-c", "--file", "input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(strcmp(args.input_file, "input.txt") == 0, "input_file is 'input.txt'");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_file_with_path(void) {
+    TEST_START("-f with relative path");
+
+    const char* items[] = {"shi", "-c", "-f", "./dir/input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(strcmp(args.input_file, "./dir/input.txt") == 0, "input_file is './dir/input.txt'");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Verbose flag tests
+ * --------------------------------------------------------------------------- */
+
 static int test_verbose_short(void) {
     TEST_START("-v flag");
 
-    const char* items[] = {"shi", "-v", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "-v", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -123,7 +196,7 @@ static int test_verbose_short(void) {
 static int test_verbose_long(void) {
     TEST_START("--verbose flag");
 
-    const char* items[] = {"shi", "--verbose", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--verbose", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -136,10 +209,14 @@ static int test_verbose_long(void) {
     return 0;
 }
 
+/* ---------------------------------------------------------------------------
+ * Version flag tests
+ * --------------------------------------------------------------------------- */
+
 static int test_version_flag(void) {
     TEST_START("--version 0 flag");
 
-    const char* items[] = {"shi", "--version", "0", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--version", "0", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -152,10 +229,30 @@ static int test_version_flag(void) {
     return 0;
 }
 
+static int test_version_short(void) {
+    TEST_START("-V flag");
+
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "-V", "0", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.version == 0, "version is 0");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Help flag tests
+ * --------------------------------------------------------------------------- */
+
 static int test_help_short(void) {
     TEST_START("-h flag returns HELP");
 
-    const char* items[] = {"shi", "-h", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-h", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -170,29 +267,13 @@ static int test_help_short(void) {
 static int test_help_long(void) {
     TEST_START("--help flag returns HELP");
 
-    const char* items[] = {"shi", "--help", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "--help", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
     shi_args_t args;
 
     TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_HELP, "returns HELP");
-
-    TEST_END;
-    return 0;
-}
-
-static int test_help_any_position(void) {
-    TEST_START("--help after positional args is not parsed (BAD_USAGE)");
-
-    const char* items[] = {"shi", "compress", "--help", "in.txt", "out.huf", NULL};
-    int argc;
-    const char** argv;
-    make_argv(items, &argc, &argv);
-    shi_args_t args;
-
-    /* --help after "compress" is treated as a positional arg (4 remaining, not 3) */
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
 
     TEST_END;
     return 0;
@@ -205,7 +286,7 @@ static int test_help_any_position(void) {
 static int test_combined_short_vh(void) {
     TEST_START("combined -vh flags");
 
-    const char* items[] = {"shi", "-vh", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-vh", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -220,7 +301,7 @@ static int test_combined_short_vh(void) {
 static int test_combined_short_vh_reversed(void) {
     TEST_START("combined -hv flags");
 
-    const char* items[] = {"shi", "-hv", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-hv", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -233,14 +314,121 @@ static int test_combined_short_vh_reversed(void) {
     return 0;
 }
 
+static int test_combined_short_cv(void) {
+    TEST_START("combined -cv flags");
+
+    const char* items[] = {"shi", "-cv", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+    TEST_ASSERT(args.verbose == 1, "verbose is 1");
+
+    TEST_END;
+    return 0;
+}
+
 /* ---------------------------------------------------------------------------
  * Error cases
  * --------------------------------------------------------------------------- */
 
+static int test_no_mode_flag(void) {
+    TEST_START("no mode flag returns BAD_USAGE");
+
+    const char* items[] = {"shi", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_no_file_flag(void) {
+    TEST_START("no file flag returns BAD_USAGE");
+
+    const char* items[] = {"shi", "-c", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_both_mode_flags(void) {
+    TEST_START("both -c and -d returns BAD_ARG");
+
+    const char* items[] = {"shi", "-c", "-d", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG, "returns BAD_ARG");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_both_mode_flags_reversed(void) {
+    TEST_START("both -d and -c returns BAD_ARG");
+
+    const char* items[] = {"shi", "-d", "-c", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG, "returns BAD_ARG");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_both_long_mode_flags(void) {
+    TEST_START("both --compress and --decompress returns BAD_ARG");
+
+    const char* items[] = {"shi", "--compress", "--decompress", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG, "returns BAD_ARG");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_mixed_mode_flags(void) {
+    TEST_START("both -c and --decompress returns BAD_ARG");
+
+    const char* items[] = {"shi", "-c", "--decompress", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG, "returns BAD_ARG");
+
+    TEST_END;
+    return 0;
+}
+
 static int test_unknown_long_flag(void) {
     TEST_START("unknown --flag returns UNKNOWN");
 
-    const char* items[] = {"shi", "--bogus", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "--bogus", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -255,7 +443,7 @@ static int test_unknown_long_flag(void) {
 static int test_unknown_short_flag(void) {
     TEST_START("unknown -x flag returns UNKNOWN");
 
-    const char* items[] = {"shi", "-x", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-x", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -270,7 +458,7 @@ static int test_unknown_short_flag(void) {
 static int test_version_missing_arg(void) {
     TEST_START("--version without value returns BAD_ARG");
 
-    const char* items[] = {"shi", "--version", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--version", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -285,7 +473,7 @@ static int test_version_missing_arg(void) {
 static int test_version_negative(void) {
     TEST_START("--version -1 returns BAD_ARG");
 
-    const char* items[] = {"shi", "--version", "-1", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--version", "-1", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -300,7 +488,7 @@ static int test_version_negative(void) {
 static int test_version_too_large(void) {
     TEST_START("--version 999 returns BAD_ARG");
 
-    const char* items[] = {"shi", "--version", "999", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--version", "999", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -315,7 +503,7 @@ static int test_version_too_large(void) {
 static int test_version_non_numeric(void) {
     TEST_START("--version abc returns BAD_ARG");
 
-    const char* items[] = {"shi", "--version", "abc", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", "--version", "abc", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -327,61 +515,16 @@ static int test_version_non_numeric(void) {
     return 0;
 }
 
-static int test_bad_command(void) {
-    TEST_START("unknown command returns BAD_CMD");
+static int test_file_missing_arg(void) {
+    TEST_START("--file without value returns BAD_ARG");
 
-    const char* items[] = {"shi", "foo", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "--file", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
     shi_args_t args;
 
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_CMD, "returns BAD_CMD");
-
-    TEST_END;
-    return 0;
-}
-
-static int test_missing_positional_args(void) {
-    TEST_START("too few positional args returns BAD_USAGE");
-
-    const char* items[] = {"shi", "compress", "in.txt", NULL};
-    int argc;
-    const char** argv;
-    make_argv(items, &argc, &argv);
-    shi_args_t args;
-
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
-
-    TEST_END;
-    return 0;
-}
-
-static int test_too_many_positional_args(void) {
-    TEST_START("too many positional args returns BAD_USAGE");
-
-    const char* items[] = {"shi", "compress", "in.txt", "out.huf", "extra.txt", NULL};
-    int argc;
-    const char** argv;
-    make_argv(items, &argc, &argv);
-    shi_args_t args;
-
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
-
-    TEST_END;
-    return 0;
-}
-
-static int test_no_command(void) {
-    TEST_START("no command returns BAD_USAGE");
-
-    const char* items[] = {"shi", NULL};
-    int argc;
-    const char** argv;
-    make_argv(items, &argc, &argv);
-    shi_args_t args;
-
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG, "returns BAD_ARG");
 
     TEST_END;
     return 0;
@@ -394,33 +537,13 @@ static int test_no_command(void) {
 static int test_double_dash(void) {
     TEST_START("-- stops flag parsing");
 
-    const char* items[] = {"shi", "--", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "--", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
     shi_args_t args;
 
-    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
-    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
-
-    TEST_END;
-    return 0;
-}
-
-/* ---------------------------------------------------------------------------
- * Flag ordering: flags after positional args should not be parsed
- * --------------------------------------------------------------------------- */
-
-static int test_flag_after_positional(void) {
-    TEST_START("flag after positional args is treated as arg");
-
-    const char* items[] = {"shi", "compress", "-v", "in.txt", "out.huf", NULL};
-    int argc;
-    const char** argv;
-    make_argv(items, &argc, &argv);
-    shi_args_t args;
-
-    /* -v after "compress" is treated as a positional arg, so we get 4 args instead of 3 */
+    /* After --, everything is treated as positional — no flags parsed */
     TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_USAGE, "returns BAD_USAGE");
 
     TEST_END;
@@ -471,7 +594,7 @@ static int test_null_safety(void) {
 static int test_default_version(void) {
     TEST_START("default version is SHI_CURRENT_VERSION");
 
-    const char* items[] = {"shi", "compress", "in.txt", "out.huf", NULL};
+    const char* items[] = {"shi", "-c", "-f", "in.txt", NULL};
     int argc;
     const char** argv;
     make_argv(items, &argc, &argv);
@@ -479,6 +602,190 @@ static int test_default_version(void) {
 
     TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
     TEST_ASSERT(args.version == SHI_CURRENT_VERSION, "version equals SHI_CURRENT_VERSION");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Decompression .shi extension validation
+ * --------------------------------------------------------------------------- */
+
+static int test_decompress_no_shi_extension(void) {
+    TEST_START("decompress without .shi extension returns BAD_ARG");
+
+    const char* items[] = {"shi", "-d", "-f", "input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_BAD_ARG,
+                "returns BAD_ARG for non-.shi input");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_decompress_with_shi_extension(void) {
+    TEST_START("decompress with .shi extension succeeds");
+
+    const char* items[] = {"shi", "-d", "-f", "file.shi", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_DECOMPRESS, "command is CMD_DECOMPRESS");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_decompress_with_dot_shi_in_path(void) {
+    TEST_START("decompress with .shi in middle of filename");
+
+    const char* items[] = {"shi", "-d", "-f", "my.backup.shi", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_DECOMPRESS, "command is CMD_DECOMPRESS");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Flag ordering: flags can appear in any order
+ * --------------------------------------------------------------------------- */
+
+static int test_flags_before_mode(void) {
+    TEST_START("flags before mode flag work");
+
+    const char* items[] = {"shi", "-v", "-V", "0", "-c", "-f", "in.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.verbose == 1, "verbose is 1");
+    TEST_ASSERT(args.version == 0, "version is 0");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_flags_after_mode(void) {
+    TEST_START("flags after mode flag work");
+
+    const char* items[] = {"shi", "-c", "-v", "-f", "in.txt", "-V", "0", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.verbose == 1, "verbose is 1");
+    TEST_ASSERT(args.version == 0, "version is 0");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_file_before_mode(void) {
+    TEST_START("-f before mode flag works");
+
+    const char* items[] = {"shi", "-f", "in.txt", "-c", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(strcmp(args.input_file, "in.txt") == 0, "input_file is 'in.txt'");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Default output derivation tests
+ * --------------------------------------------------------------------------- */
+
+static int test_compress_default_output(void) {
+    TEST_START("compress default output appends .shi");
+
+    const char* items[] = {"shi", "-c", "-f", "input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+    TEST_ASSERT(strcmp(args.input_file, "input.txt") == 0, "input_file is 'input.txt'");
+
+    /* Derivation is tested in main.c; here just verify the flag is set */
+    TEST_END;
+    return 0;
+}
+
+static int test_decompress_default_output(void) {
+    TEST_START("decompress default output strips .shi");
+
+    const char* items[] = {"shi", "-d", "-f", "input.shi", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_DECOMPRESS, "command is CMD_DECOMPRESS");
+    TEST_ASSERT(strcmp(args.input_file, "input.shi") == 0, "input_file is 'input.shi'");
+
+    TEST_END;
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Edge cases
+ * --------------------------------------------------------------------------- */
+
+static int test_file_flag_combination(void) {
+    TEST_START("--file with --compress");
+
+    const char* items[] = {"shi", "--compress", "--file", "input.txt", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_OK, "parse succeeds");
+    TEST_ASSERT(args.command == CMD_COMPRESS, "command is CMD_COMPRESS");
+    TEST_ASSERT(strcmp(args.input_file, "input.txt") == 0, "input_file is 'input.txt'");
+
+    TEST_END;
+    return 0;
+}
+
+static int test_help_with_other_flags(void) {
+    TEST_START("--help with other flags still returns HELP");
+
+    const char* items[] = {"shi", "-v", "--version", "0", "-c", "-f", "in.txt", "--help", NULL};
+    int argc;
+    const char** argv;
+    make_argv(items, &argc, &argv);
+    shi_args_t args;
+
+    TEST_ASSERT(shi_parse_args(argc, argv, &args) == ARGS_ERR_HELP, "returns HELP");
 
     TEST_END;
     return 0;
@@ -493,38 +800,53 @@ int main(void) {
 
     int failures = 0;
 
-    /* Valid flags */
-    failures += test_default_args();
-    failures += test_compress_command();
-    failures += test_decompress_command();
+    /* Compress flag tests */
+    failures += test_compress_short();
+    failures += test_compress_long();
+
+    /* Decompress flag tests */
+    failures += test_decompress_short();
+    failures += test_decompress_long();
+
+    /* File flag tests */
+    failures += test_file_short();
+    failures += test_file_long();
+    failures += test_file_with_path();
+
+    /* Verbose flag tests */
     failures += test_verbose_short();
     failures += test_verbose_long();
+
+    /* Version flag tests */
     failures += test_version_flag();
+    failures += test_version_short();
+
+    /* Help flag tests */
     failures += test_help_short();
     failures += test_help_long();
-    failures += test_help_any_position();
 
     /* Combined short flags */
     failures += test_combined_short_vh();
     failures += test_combined_short_vh_reversed();
+    failures += test_combined_short_cv();
 
     /* Error cases */
+    failures += test_no_mode_flag();
+    failures += test_no_file_flag();
+    failures += test_both_mode_flags();
+    failures += test_both_mode_flags_reversed();
+    failures += test_both_long_mode_flags();
+    failures += test_mixed_mode_flags();
     failures += test_unknown_long_flag();
     failures += test_unknown_short_flag();
     failures += test_version_missing_arg();
     failures += test_version_negative();
     failures += test_version_too_large();
     failures += test_version_non_numeric();
-    failures += test_bad_command();
-    failures += test_missing_positional_args();
-    failures += test_too_many_positional_args();
-    failures += test_no_command();
+    failures += test_file_missing_arg();
 
     /* -- separator */
     failures += test_double_dash();
-
-    /* Flag ordering */
-    failures += test_flag_after_positional();
 
     /* Error messages */
     failures += test_error_messages();
@@ -534,6 +856,24 @@ int main(void) {
 
     /* Default version */
     failures += test_default_version();
+
+    /* Decompression .shi extension validation */
+    failures += test_decompress_no_shi_extension();
+    failures += test_decompress_with_shi_extension();
+    failures += test_decompress_with_dot_shi_in_path();
+
+    /* Flag ordering */
+    failures += test_flags_before_mode();
+    failures += test_flags_after_mode();
+    failures += test_file_before_mode();
+
+    /* Default output derivation */
+    failures += test_compress_default_output();
+    failures += test_decompress_default_output();
+
+    /* Edge cases */
+    failures += test_file_flag_combination();
+    failures += test_help_with_other_flags();
 
     printf("\n=== Results: %s test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
 

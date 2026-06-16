@@ -15,7 +15,7 @@
 | `compress.c / compress.h` | High-level compression pipeline: `compress_file()`, `write_header()`, `compress_data()`, `shi_compress_v0()` |
 | `decompress.c / decompress.h` | High-level decompression pipeline: `decompress_file()`, `read_header()`, `reconstruct_tree_from_codes()`, `decompress_data()`, `shi_decompress_v0()` |
 | `version.h` | Version constants (`SHI_CURRENT_VERSION`, `SHI_MAX_VERSION`), magic byte definitions, per-version entry point declarations, `shi_detect_version()` |
-| `args.c / args.h` | CLI argument parsing — zero-dependency manual parser supporting short/long flags, combined flags (`-vh`), `--` separator, unknown flag detection |
+| `args.c / args.h` | CLI argument parsing — zero-dependency manual parser supporting short/long flags (`-c`/`--compress`, `-d`/`--decompress`, `-f`/`--file`, `-V`/`--version`, `-v`/`--verbose`, `-h`/`--help`), combined flags (`-vh`), `--` separator, unknown flag detection |
 
 ## Data Flow
 

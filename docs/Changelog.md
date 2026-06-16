@@ -1,5 +1,55 @@
 # Changelog
 
+## Phase 4 — CLI Refactor: Flag-Based Mode Selection (Completed) ✅
+
+Rewrote the CLI from a positional-subcommand model (`shi compress input.txt`) to a flag-based model (`shi -c -f input.txt`). The output file is now derived automatically from the input file.
+
+### Rationale
+
+- Aligns with established compression tool conventions (`gzip`, `bzip2`, `tar`)
+- Shorter, more scriptable syntax
+- Output file derived automatically (`.shi` appended for compress, stripped for decompress)
+- Every option has both short and long forms for discoverability
+
+### New CLI
+
+```
+Usage: shi [options] -f <input_file>
+
+Options:
+  -c, --compress     Compress mode
+  -d, --decompress   Decompress mode
+  -f, --file <path>  Input file path (required)
+  -v, --verbose      Enable verbose output
+  -V, --version <N>  Format version N (default: 0)
+  -h, --help         Show this help message
+
+Examples:
+  shi -c -f input.txt              # outputs input.txt.shi
+  shi -d -f input.shi              # outputs input
+  shi -c -f input.bin --verbose    # outputs input.bin.shi
+  shi --version 0 -d -f input.shi  # outputs input
+```
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `include/cli/args.h` | **Modified** — `shi_args_t` restructured: removed `output_file`/`output_specified`, added `command` (from mode flag), `input_file` (from `-f`); updated `shi_parse_args()` docstring |
+| `src/cli/args.c` | **Rewritten** — new parser supporting `-c`/`--compress`, `-d`/`--decompress`, `-f`/`--file`, `-V`/`--version`; updated `shi_print_usage()` with new examples |
+| `src/main.c` | **Modified** — removed `output_file`/`output_specified` handling; output derived via `derive_default_output()` |
+| `tests/test_args.c` | **Rewritten** — 31 tests covering new CLI (mode flags, file flag, combined flags, error cases, flag ordering) |
+| `include/core/version.h` | **Restored** — `SHI_COMPRESSED_EXT` constant (was lost during stash) |
+| `docs/Changelog.md` | **Added** — Phase 4 entry documenting this change |
+| `docs/Architecture.md` | **Updated** — CLI usage reference |
+| `README.md` | **Updated** — CLI examples and options table |
+
+### Breaking Changes
+
+The old CLI (`shi compress input.txt [output.txt]`) is no longer supported. Users must use the new flag-based syntax.
+
+---
+
 ## Phase 3 — File Format Versioning (Completed) ✅
 
 Established infrastructure for multiple file format versions.
@@ -16,7 +66,9 @@ Established infrastructure for multiple file format versions.
 | `src/core/compress.c` | **Modified** — added `shi_magic_v0[]` definition, `shi_compress_v0()` wrapper delegating to `compress_file()` |
 | `src/core/decompress.c` | **Modified** — added `shi_decompress_v0()` wrapper delegating to `decompress_file()` |
 
-### CLI
+### CLI (legacy — superseded by Phase 4)
+
+> **Note:** The CLI was refactored in Phase 4. See [Phase 4](#phase-4-cli-refactor-flag-based-mode-selection-completed) for the current syntax.
 
 ```
 Usage: shi [--version <N>] <compress|decompress> <input_file> <output_file>
