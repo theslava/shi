@@ -16,27 +16,30 @@ static int test_compress_roundtrip(void) {
     TEST_START("compress -> decompress roundtrip");
 
     const char* input = "test_compress_input.txt";
-    const char* compressed = "test_compress_output.txt";
-    const char* decompressed = "test_compress_restored.txt";
+    const char* compressed = "test_compress_input.txt.shi";
+    const char* backup = "test_compress_input.txt.bak";
 
     /* Create input file */
     create_temp_file(input, "Hello, world! This is a test for compression.");
+
+    /* Backup original for roundtrip comparison */
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
 
     /* Compress */
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compression succeeds");
 
-    /* Decompress */
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression succeeds");
 
-    /* Compare files */
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "decompressed matches original");
+    /* Compare decompressed output against backup of original */
+    TEST_ASSERT(files_equal(backup, input) == 1, "decompressed matches original");
 
     /* Cleanup */
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -47,22 +50,25 @@ static int test_compress_empty(void) {
     TEST_START("compress empty file");
 
     const char* input = "test_empty.txt";
-    const char* compressed = "test_empty_compressed.txt";
-    const char* decompressed = "test_empty_decompressed.txt";
+    const char* compressed = "test_empty.txt.shi";
+    const char* backup = "test_empty.txt.bak";
 
     create_temp_file(input, "");
+
+    /* Backup original */
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
 
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress empty file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress empty file succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "empty file roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "empty file roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -73,8 +79,8 @@ static int test_compress_repeated(void) {
     TEST_START("compress repeated content");
 
     const char* input = "test_repeated.txt";
-    const char* compressed = "test_repeated_compressed.txt";
-    const char* decompressed = "test_repeated_decompressed.txt";
+    const char* compressed = "test_repeated.txt.shi";
+    const char* backup = "test_repeated.txt.bak";
 
     /* Create a highly repetitive file */
     FILE* fp = fopen(input, "wb");
@@ -86,17 +92,19 @@ static int test_compress_repeated(void) {
     }
     TEST_ASSERT(fp != NULL, "created repeated content file");
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress repeated content succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress repeated content succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "repeated content roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "repeated content roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -107,8 +115,8 @@ static int test_compress_single_byte(void) {
     TEST_START("compress single-byte file");
 
     const char* input = "test_single_byte.txt";
-    const char* compressed = "test_single_byte_compressed.txt";
-    const char* decompressed = "test_single_byte_decompressed.txt";
+    const char* compressed = "test_single_byte.txt.shi";
+    const char* backup = "test_single_byte.txt.bak";
 
     /* Create a file with exactly one byte */
     FILE* fp = fopen(input, "wb");
@@ -117,17 +125,19 @@ static int test_compress_single_byte(void) {
     fwrite(&byte_val, 1, 1, fp);
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress single-byte file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress single-byte file succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "single-byte roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "single-byte roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -138,8 +148,8 @@ static int test_compress_single_symbol(void) {
     TEST_START("compress single-symbol file");
 
     const char* input = "test_single_symbol.txt";
-    const char* compressed = "test_single_symbol_compressed.txt";
-    const char* decompressed = "test_single_symbol_decompressed.txt";
+    const char* compressed = "test_single_symbol.txt.shi";
+    const char* backup = "test_single_symbol.txt.bak";
 
     /* Create a file with only one distinct symbol repeated */
     FILE* fp = fopen(input, "wb");
@@ -149,17 +159,19 @@ static int test_compress_single_symbol(void) {
     }
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress single-symbol file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress single-symbol file succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "single-symbol roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "single-symbol roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -170,8 +182,8 @@ static int test_compress_binary(void) {
     TEST_START("compress binary data (all byte values)");
 
     const char* input = "test_binary.bin";
-    const char* compressed = "test_binary_compressed.bin";
-    const char* decompressed = "test_binary_decompressed.bin";
+    const char* compressed = "test_binary.bin.shi";
+    const char* backup = "test_binary.bin.bak";
 
     /* Create a file with all 256 byte values repeated */
     unsigned char data[256];
@@ -186,17 +198,19 @@ static int test_compress_binary(void) {
     }
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress binary data succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress binary data succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "binary data roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "binary data roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -207,8 +221,8 @@ static int test_compress_single_byte_null(void) {
     TEST_START("compress single-byte file (0x00)");
 
     const char* input = "test_single_null.txt";
-    const char* compressed = "test_single_null_compressed.txt";
-    const char* decompressed = "test_single_null_decompressed.txt";
+    const char* compressed = "test_single_null.txt.shi";
+    const char* backup = "test_single_null.txt.bak";
 
     FILE* fp = fopen(input, "wb");
     TEST_ASSERT(fp != NULL, "created null-byte file");
@@ -216,17 +230,19 @@ static int test_compress_single_byte_null(void) {
     fwrite(&byte_val, 1, 1, fp);
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compress null-byte file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompress null-byte file succeeds");
 
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "null-byte roundtrip");
+    TEST_ASSERT(files_equal(backup, input) == 1, "null-byte roundtrip");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
@@ -269,7 +285,7 @@ static int write_minimal_compressed(const char* path) {
 static int test_decompress_corrupted_magic(void) {
     TEST_START("decompress with corrupted magic bytes");
 
-    const char* input = "test_bad_magic.huf";
+    const char* input = "test_bad_magic.shi";
     const char* output = "test_bad_magic_out.txt";
 
     /* Write a file with wrong magic bytes */
@@ -293,7 +309,7 @@ static int test_decompress_corrupted_magic(void) {
 static int test_decompress_truncated_header(void) {
     TEST_START("decompress with truncated header");
 
-    const char* input = "test_truncated.huf";
+    const char* input = "test_truncated.shi";
     const char* output = "test_truncated_out.txt";
 
     /* Write a file with only magic + 1 byte of header */
@@ -319,7 +335,7 @@ static int test_decompress_truncated_header(void) {
 static int test_decompress_zero_symbols(void) {
     TEST_START("decompress with num_symbols = 0");
 
-    const char* input = "test_zero_sym.huf";
+    const char* input = "test_zero_sym.shi";
     const char* output = "test_zero_sym_out.txt";
 
     FILE* fp = fopen(input, "wb");
@@ -344,7 +360,7 @@ static int test_decompress_zero_symbols(void) {
 static int test_decompress_invalid_num_symbols(void) {
     TEST_START("decompress with num_symbols out of range");
 
-    const char* input = "test_bad_num_sym.huf";
+    const char* input = "test_bad_num_sym.shi";
     const char* output = "test_bad_num_sym_out.txt";
 
     FILE* fp = fopen(input, "wb");
@@ -369,11 +385,11 @@ static int test_decompress_invalid_num_symbols(void) {
 static int test_decompress_truncated_data(void) {
     TEST_START("decompress with truncated data");
 
-    const char* input = "test_truncated_data.huf";
+    const char* input = "test_truncated_data.shi";
     const char* output = "test_truncated_data_out.txt";
 
     /* First write a valid compressed file */
-    const char* valid = "test_truncated_data_valid.huf";
+    const char* valid = "test_truncated_data_valid.shi";
     write_minimal_compressed(valid);
 
     /* Now read it and truncate it */
@@ -410,7 +426,7 @@ static int test_decompress_truncated_data(void) {
 static int test_decompress_empty_file(void) {
     TEST_START("decompress with empty file (only magic)");
 
-    const char* input = "test_empty.huf";
+    const char* input = "test_empty.shi";
     const char* output = "test_empty_out.txt";
 
     FILE* fp = fopen(input, "wb");
