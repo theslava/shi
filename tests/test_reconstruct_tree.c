@@ -14,19 +14,19 @@
 #include "data_structures/node.h"
 #include "core/decompress.h"
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Helper: count nodes in a tree via DFS
- * ========================================================================== */
+ * --------------------------------------------------------------------------- */
 static int count_nodes(node* n) {
     if (!n)
         return 0;
     return 1 + count_nodes(n->left) + count_nodes(n->right);
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Helper: collect leaf byte values from a tree via DFS
  * Returns the number of leaves found.
- * ========================================================================== */
+ * --------------------------------------------------------------------------- */
 static int collect_leaves(node* n, int* leaves, int max_leaves) {
     if (!n || max_leaves <= 0)
         return 0;
@@ -39,10 +39,10 @@ static int collect_leaves(node* n, int* leaves, int max_leaves) {
            collect_leaves(n->right, leaves, max_leaves);
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Helper: verify that a code can be decoded in a tree
  * Returns the decoded byte value, or -1 if the code is invalid.
- * ========================================================================== */
+ * --------------------------------------------------------------------------- */
 static int decode_code(node* root, unsigned int code, int length) {
     node* current = root;
     for (int bit_pos = length - 1; bit_pos >= 0; bit_pos--) {
@@ -60,12 +60,12 @@ static int decode_code(node* root, unsigned int code, int length) {
     return -1;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 1: Reconstruct tree from two-symbol codes
  * Codes: A=0(len=1), B=1(len=1)
  * Expected tree: root → left: A, right: B
- * ========================================================================== */
-static int test_reconstruct_two_symbols(void) {
+ * --------------------------------------------------------------------------- */
+static int test_two_symbols(void) {
     TEST_START("reconstruct_tree: two symbols (A=0/1bit, B=1/1bit)");
 
     unsigned int codes[256];
@@ -104,12 +104,12 @@ static int test_reconstruct_two_symbols(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 2: Reconstruct tree from three-symbol codes
  * Codes: A=0(1bit), C=10(2bit), B=11(2bit)
  * Expected tree: root → left: A, right: parent → left: C, right: B
- * ========================================================================== */
-static int test_reconstruct_three_symbols(void) {
+ * --------------------------------------------------------------------------- */
+static int test_three_symbols(void) {
     TEST_START("reconstruct_tree: three symbols (A=0/1bit, C=10/2bit, B=11/2bit)");
 
     unsigned int codes[256];
@@ -151,12 +151,12 @@ static int test_reconstruct_three_symbols(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 3: Reconstruct tree from single-symbol code
  * Code: X=0(1bit)
  * Expected: root is a leaf with byte='X'
- * ========================================================================== */
-static int test_reconstruct_single_symbol(void) {
+ * --------------------------------------------------------------------------- */
+static int test_single_symbol(void) {
     TEST_START("reconstruct_tree: single symbol (X=0/1bit)");
 
     unsigned int codes[256];
@@ -181,11 +181,11 @@ static int test_reconstruct_single_symbol(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 4: Roundtrip — generate_codes then reconstruct should produce
  * a tree that decodes the same codes.
- * ========================================================================== */
-static int test_reconstruct_roundtrip(void) {
+ * --------------------------------------------------------------------------- */
+static int test_roundtrip(void) {
     TEST_START("reconstruct_tree: roundtrip (generate → reconstruct → decode)");
 
     /* Build a tree with known frequencies */
@@ -233,10 +233,10 @@ static int test_reconstruct_roundtrip(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 5: NULL and edge case handling
- * ========================================================================== */
-static int test_reconstruct_null_handling(void) {
+ * --------------------------------------------------------------------------- */
+static int test_null_handling(void) {
     TEST_START("reconstruct_tree: NULL handling");
 
     unsigned int codes[256];
@@ -263,10 +263,10 @@ static int test_reconstruct_null_handling(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 6: Reconstruct from codes that produce a deep tree (5 symbols)
- * ========================================================================== */
-static int test_reconstruct_deep_tree(void) {
+ * --------------------------------------------------------------------------- */
+static int test_deep_tree(void) {
     TEST_START("reconstruct_tree: deep tree (5 symbols)");
 
     unsigned int codes[256];
@@ -307,10 +307,10 @@ static int test_reconstruct_deep_tree(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 7: Reconstruct from all 256 symbols (equal frequency tree)
- * ========================================================================== */
-static int test_reconstruct_all_256(void) {
+ * --------------------------------------------------------------------------- */
+static int test_all_256(void) {
     TEST_START("reconstruct_tree: all 256 symbols");
 
     /* First build a tree to get valid codes */
@@ -352,21 +352,21 @@ static int test_reconstruct_all_256(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Main
- * ========================================================================== */
+ * --------------------------------------------------------------------------- */
 int main(void) {
     printf("=== reconstruct_tree_from_codes() Unit Test Suite ===\n\n");
 
     int failures = 0;
 
-    failures += test_reconstruct_two_symbols();
-    failures += test_reconstruct_three_symbols();
-    failures += test_reconstruct_single_symbol();
-    failures += test_reconstruct_roundtrip();
-    failures += test_reconstruct_null_handling();
-    failures += test_reconstruct_deep_tree();
-    failures += test_reconstruct_all_256();
+    failures += test_two_symbols();
+    failures += test_three_symbols();
+    failures += test_single_symbol();
+    failures += test_roundtrip();
+    failures += test_null_handling();
+    failures += test_deep_tree();
+    failures += test_all_256();
 
     printf("\n=== Results: %s test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
 

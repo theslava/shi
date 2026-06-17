@@ -13,36 +13,21 @@
 #include "core/decompress.h"
 #include "core/version.h"
 
-/* ==========================================================================
- * Helper: read entire file into a buffer (returns size, or -1 on error)
- * ========================================================================== */
-static int read_file(const char* path, unsigned char* buf, int max_size) {
-    FILE* fp = fopen(path, "rb");
-    if (!fp)
-        return -1;
-    int total = 0;
-    while (total < max_size) {
-        int n = fread(buf + total, 1, max_size - total, fp);
-        if (n == 0)
-            break;
-        total += n;
-    }
-    fclose(fp);
-    return total;
-}
-
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 1: Known input → compress → verify magic bytes + header structure
- * ========================================================================== */
-static int test_integration_magic_and_header(void) {
+ * --------------------------------------------------------------------------- */
+static int test_magic_and_header(void) {
     TEST_START("integration: verify compressed file structure");
 
-    const char* input = "test_integration_input.txt";
-    const char* compressed = "test_integration_compressed.huf";
-    const char* decompressed = "test_integration_decompressed.txt";
+    const char* input = "test_int_input1.txt";
+    const char* compressed = "test_int_input1.txt.shi";
+    const char* backup = "test_int_input1.txt.bak";
 
     /* Create input: "AB" repeated — two symbols, equal frequency */
     create_temp_file(input, "ABABABABABABABABABAB");
+
+    /* Backup original for roundtrip comparison */
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
 
     /* Compress */
     int result = compress_file(input, compressed);
@@ -70,42 +55,46 @@ static int test_integration_magic_and_header(void) {
     /* Verify at least one symbol entry exists (2B value + 1B length + 4B code = 6B min) */
     TEST_ASSERT(size >= 4 + 4 + 4 + 6, "header has at least magic + num_sym + fsize + 1 symbol");
 
-    /* Decompress and verify roundtrip */
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "roundtrip matches original");
+
+    /* Compare against backup */
+    TEST_ASSERT(files_equal(backup, input) == 1, "roundtrip matches original");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 2: Compress → decompress with binary data — bit-level correctness
  * Verify the compressed file is non-trivial (not just a pass-through)
- * ========================================================================== */
-static int test_integration_binary_roundtrip(void) {
+ * --------------------------------------------------------------------------- */
+static int test_binary_roundtrip(void) {
     TEST_START("integration: binary data roundtrip");
 
-    const char* input = "test_binary_input.bin";
-    const char* compressed = "test_binary_compressed.huf";
-    const char* decompressed = "test_binary_decompressed.bin";
+    const char* input = "test_int_input2.bin";
+    const char* compressed = "test_int_input2.bin.shi";
+    const char* backup = "test_int_input2.bin.bak";
 
     /* Create input with all 256 byte values */
     unsigned char data[256];
     for (int i = 0; i < 256; i++)
         data[i] = (unsigned char)i;
 
-    FILE* fp = fopen(input, "wb");
-    TEST_ASSERT(fp != NULL, "created binary input file");
-    for (int i = 0; i < 4; i++)
-        fwrite(data, 1, 256, fp);
-    fclose(fp);
+    create_bin_file(input, data, sizeof(data));
+    for (int i = 0; i < 3; i++) {
+        FILE* fp = fopen(input, "ab");
+        fwrite(data, 1, sizeof(data), fp);
+        fclose(fp);
+    }
 
-    int original_size = 256 * 4;
+    /* Backup original */
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
 
     /* Compress */
     int result = compress_file(input, compressed);
@@ -115,33 +104,31 @@ static int test_integration_binary_roundtrip(void) {
     unsigned char buf[4096];
     int compressed_size = read_file(compressed, buf, sizeof(buf));
     TEST_ASSERT(compressed_size > 0, "compressed file has content");
-    /* For all-256-symbol data with equal frequency, Huffman gives ~8-bit codes.
-     * Compressed size ≈ 1024 bits / 8 = 128 bytes + header (~20B) = ~148B */
-    TEST_ASSERT(compressed_size > 0, "compressed file has content");
-    /* Decompress */
-    result = decompress_file(compressed, decompressed);
+
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression succeeds");
 
-    /* Verify roundtrip */
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "binary roundtrip matches");
+    /* Verify roundtrip against backup */
+    TEST_ASSERT(files_equal(backup, input) == 1, "binary roundtrip matches");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 3: Compress highly repetitive data — verify compression ratio
- * ========================================================================== */
-static int test_integration_compression_ratio(void) {
+ * --------------------------------------------------------------------------- */
+static int test_compression_ratio(void) {
     TEST_START("integration: compression ratio on repetitive data");
 
-    const char* input = "test_repetitive.txt";
-    const char* compressed = "test_repetitive_compressed.huf";
-    const char* decompressed = "test_repetitive_decompressed.txt";
+    const char* input = "test_int_input3.txt";
+    const char* compressed = "test_int_input3.txt.shi";
+    const char* backup = "test_int_input3.txt.bak";
 
     /* Create highly repetitive file: 1000 'A' characters */
     FILE* fp = fopen(input, "wb");
@@ -149,6 +136,9 @@ static int test_integration_compression_ratio(void) {
     for (int i = 0; i < 1000; i++)
         fputc('A', fp);
     fclose(fp);
+
+    /* Backup original */
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
 
     /* Compress */
     int result = compress_file(input, compressed);
@@ -171,28 +161,30 @@ static int test_integration_compression_ratio(void) {
     double ratio = (double)comp_size / orig_size;
     TEST_ASSERT(ratio < 0.5, "compression ratio below 0.5");
 
-    /* Decompress and verify */
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "repetitive data roundtrip matches");
+
+    /* Verify against backup */
+    TEST_ASSERT(files_equal(backup, input) == 1, "repetitive data roundtrip matches");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 4: Compress → decompress with all-same-byte file
- * ========================================================================== */
-static int test_integration_all_same_byte(void) {
+ * --------------------------------------------------------------------------- */
+static int test_all_same_byte(void) {
     TEST_START("integration: all-same-byte file");
 
-    const char* input = "test_same_byte.txt";
-    const char* compressed = "test_same_byte_compressed.huf";
-    const char* decompressed = "test_same_byte_decompressed.txt";
+    const char* input = "test_int_input4.txt";
+    const char* compressed = "test_int_input4.txt.shi";
+    const char* backup = "test_int_input4.txt.bak";
 
     /* File with 256 'Z' characters */
     FILE* fp = fopen(input, "wb");
@@ -201,12 +193,16 @@ static int test_integration_all_same_byte(void) {
         fputc('Z', fp);
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compression succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "same-byte roundtrip matches");
+
+    TEST_ASSERT(files_equal(backup, input) == 1, "same-byte roundtrip matches");
 
     /* Verify compressed file has correct structure */
     unsigned char buf[4096];
@@ -219,21 +215,21 @@ static int test_integration_all_same_byte(void) {
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 5: Compress → decompress with text file — verify Huffman codes
  * are non-trivial (variable length) for diverse input
- * ========================================================================== */
-static int test_integration_text_variable_codes(void) {
+ * --------------------------------------------------------------------------- */
+static int test_text_variable_codes(void) {
     TEST_START("integration: text file has variable-length codes");
 
-    const char* input = "test_text.txt";
-    const char* compressed = "test_text_compressed.huf";
+    const char* input = "test_int_input5.txt";
+    const char* compressed = "test_int_input5.txt.shi";
 
     /* Create text with varied character frequencies */
     const char* text =
@@ -282,15 +278,15 @@ static int test_integration_text_variable_codes(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 6: Full roundtrip with a large file
- * ========================================================================== */
-static int test_integration_large_file(void) {
+ * --------------------------------------------------------------------------- */
+static int test_large_file(void) {
     TEST_START("integration: large file roundtrip");
 
-    const char* input = "test_large.bin";
-    const char* compressed = "test_large_compressed.huf";
-    const char* decompressed = "test_large_decompressed.bin";
+    const char* input = "test_int_input6.bin";
+    const char* compressed = "test_int_input6.bin.shi";
+    const char* backup = "test_int_input6.bin.bak";
 
     /* Create a 10KB file with repeating pattern */
     unsigned char pattern[256];
@@ -307,31 +303,35 @@ static int test_integration_large_file(void) {
     }
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compression of large file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression of large file succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "large file roundtrip matches");
+
+    TEST_ASSERT(files_equal(backup, input) == 1, "large file roundtrip matches");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 7: Verify compressed output is deterministic
  * Compress the same input twice and compare the binary output
- * ========================================================================== */
-static int test_integration_deterministic(void) {
+ * --------------------------------------------------------------------------- */
+static int test_deterministic(void) {
     TEST_START("integration: compression is deterministic");
 
-    const char* input = "test_deterministic.txt";
-    const char* compressed1 = "test_deterministic_1.huf";
-    const char* compressed2 = "test_deterministic_2.huf";
+    const char* input = "test_int_input7.txt";
+    const char* compressed1 = "test_int_input7.txt.shi";
+    const char* compressed2 = "test_int_input7_2.txt.shi";
 
     create_temp_file(input, "Hello, deterministic world! Testing reproducibility.");
 
@@ -355,15 +355,15 @@ static int test_integration_deterministic(void) {
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 8: Edge case — file with only null bytes
- * ========================================================================== */
-static int test_integration_null_bytes(void) {
+ * --------------------------------------------------------------------------- */
+static int test_null_bytes(void) {
     TEST_START("integration: file with only null bytes");
 
-    const char* input = "test_nulls.bin";
-    const char* compressed = "test_nulls_compressed.huf";
-    const char* decompressed = "test_nulls_decompressed.bin";
+    const char* input = "test_int_input8.bin";
+    const char* compressed = "test_int_input8.bin.shi";
+    const char* backup = "test_int_input8.bin.bak";
 
     FILE* fp = fopen(input, "wb");
     TEST_ASSERT(fp != NULL, "created null-byte file");
@@ -371,30 +371,34 @@ static int test_integration_null_bytes(void) {
         fputc(0x00, fp);
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compression of null-byte file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression of null-byte file succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "null-byte roundtrip matches");
+
+    TEST_ASSERT(files_equal(backup, input) == 1, "null-byte roundtrip matches");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Test 9: Edge case — file with mixed null and non-null bytes
- * ========================================================================== */
-static int test_integration_mixed_null(void) {
+ * --------------------------------------------------------------------------- */
+static int test_mixed_null(void) {
     TEST_START("integration: file with mixed null and non-null bytes");
 
-    const char* input = "test_mixed.bin";
-    const char* compressed = "test_mixed_compressed.huf";
-    const char* decompressed = "test_mixed_decompressed.bin";
+    const char* input = "test_int_input9.bin";
+    const char* compressed = "test_int_input9.bin.shi";
+    const char* backup = "test_int_input9.bin.bak";
 
     FILE* fp = fopen(input, "wb");
     TEST_ASSERT(fp != NULL, "created mixed file");
@@ -404,38 +408,42 @@ static int test_integration_mixed_null(void) {
     }
     fclose(fp);
 
+    TEST_ASSERT(copy_file(input, backup) == 0, "backup original file created");
+
     int result = compress_file(input, compressed);
     TEST_ASSERT(result == 0, "compression of mixed file succeeds");
 
-    result = decompress_file(compressed, decompressed);
+    /* Decompress (overwrites original) */
+    result = decompress_file(compressed, input);
     TEST_ASSERT(result == 0, "decompression of mixed file succeeds");
-    TEST_ASSERT(files_equal(input, decompressed) == 1, "mixed roundtrip matches");
+
+    TEST_ASSERT(files_equal(backup, input) == 1, "mixed roundtrip matches");
 
     remove(input);
     remove(compressed);
-    remove(decompressed);
+    remove(backup);
 
     TEST_END;
     return 0;
 }
 
-/* ==========================================================================
+/* ---------------------------------------------------------------------------
  * Main
- * ========================================================================== */
+ * --------------------------------------------------------------------------- */
 int main(void) {
     printf("=== Integration Test Suite ===\n\n");
 
     int failures = 0;
 
-    failures += test_integration_magic_and_header();
-    failures += test_integration_binary_roundtrip();
-    failures += test_integration_compression_ratio();
-    failures += test_integration_all_same_byte();
-    failures += test_integration_text_variable_codes();
-    failures += test_integration_large_file();
-    failures += test_integration_deterministic();
-    failures += test_integration_null_bytes();
-    failures += test_integration_mixed_null();
+    failures += test_magic_and_header();
+    failures += test_binary_roundtrip();
+    failures += test_compression_ratio();
+    failures += test_all_same_byte();
+    failures += test_text_variable_codes();
+    failures += test_large_file();
+    failures += test_deterministic();
+    failures += test_null_bytes();
+    failures += test_mixed_null();
 
     printf("\n=== Results: %s test(s) ===", failures == 0 ? "ALL PASSED" : "SOME FAILED");
 

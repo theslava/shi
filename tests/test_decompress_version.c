@@ -110,7 +110,7 @@ static int tamper_version(const char* original_path,
 static int test_decompress_valid_v0(void) {
     TEST_START("decompress valid v0 file");
 
-    const char* input = "test_v0_valid.huf";
+    const char* input = "test_v0_valid.shi";
     const char* output = "test_v0_valid_out.txt";
     const char* expected = "test_v0_expected.txt";
 
@@ -142,7 +142,7 @@ static int test_decompress_valid_v0(void) {
 static int test_decompress_version_1(void) {
     TEST_START("decompress file with version 1 magic");
 
-    const char* input = "test_v1.huf";
+    const char* input = "test_v1.shi";
     const char* output = "test_v1_out.txt";
 
     /* Write a file with version byte = 1 */
@@ -166,7 +166,7 @@ static int test_decompress_version_1(void) {
 static int test_decompress_version_255(void) {
     TEST_START("decompress file with version 255 magic");
 
-    const char* input = "test_v255.huf";
+    const char* input = "test_v255.shi";
     const char* output = "test_v255_out.txt";
 
     /* Write a file with version byte = 255 */
@@ -190,7 +190,7 @@ static int test_decompress_version_255(void) {
 static int test_decompress_version_2(void) {
     TEST_START("decompress file with version 2 magic");
 
-    const char* input = "test_v2.huf";
+    const char* input = "test_v2.shi";
     const char* output = "test_v2_out.txt";
 
     /* Write a file with version byte = 2 */
@@ -214,8 +214,8 @@ static int test_decompress_version_2(void) {
 static int test_decompress_tampered_version(void) {
     TEST_START("decompress file with tampered version byte");
 
-    const char* original = "test_tamper_orig.huf";
-    const char* tampered = "test_tampered.huf";
+    const char* original = "test_tamper_orig.shi";
+    const char* tampered = "test_tampered.shi";
     const char* output = "test_tampered_out.txt";
 
     /* Write a valid v0 file */
@@ -244,7 +244,7 @@ static int test_compress_magic_bytes(void) {
     TEST_START("verify compressed file has correct magic bytes");
 
     const char* input = "test_magic_input.txt";
-    const char* compressed = "test_magic_compressed.huf";
+    const char* compressed = "test_magic_compressed.shi";
 
     /* Create a small input file */
     create_temp_file(input, "Hello");
@@ -282,7 +282,7 @@ static int test_compress_magic_bytes(void) {
 static int test_decompress_non_shi_magic(void) {
     TEST_START("decompress file with non-SHI magic bytes");
 
-    const char* input = "test_non_shi.huf";
+    const char* input = "test_non_shi.shi";
     const char* output = "test_non_shi_out.txt";
 
     /* Write a file with "XYZ" magic */
@@ -310,7 +310,7 @@ static int test_decompress_non_shi_magic(void) {
 static int test_decompress_shi_magic_bad_version(void) {
     TEST_START("decompress SHI magic with garbage version byte");
 
-    const char* input = "test_shi_bad_ver.huf";
+    const char* input = "test_shi_bad_ver.shi";
     const char* output = "test_shi_bad_ver_out.txt";
 
     /* Write a file with SHI magic but version byte = 0x80 (negative if signed char) */
@@ -339,7 +339,7 @@ static int test_decompress_v0_all_symbols(void) {
     TEST_START("decompress valid v0 file with all 256 symbols");
 
     const char* input = "test_allsym_input.bin";
-    const char* compressed = "test_allsym_compressed.huf";
+    const char* compressed = "test_allsym_compressed.shi";
     const char* decompressed = "test_allsym_decompressed.bin";
 
     /* Create input with all 256 byte values */
@@ -382,7 +382,7 @@ static int test_decompress_v0_all_symbols(void) {
 static int test_decompress_v0_empty_header(void) {
     TEST_START("decompress v0 file with num_symbols=0 (empty)");
 
-    const char* input = "test_v0_empty.huf";
+    const char* input = "test_v0_empty.shi";
     const char* output = "test_v0_empty_out.txt";
 
     /* Write a valid v0 header with num_symbols=0 */
