@@ -96,7 +96,9 @@ tests/
 ├── test_file_writer.c  ✓ complete (4 tests)
 ├── test_list.c         ✓ complete (5 tests)
 ├── test_tree.c         ✓ complete (3 tests)
-└── test_utils.c        ✓ complete (2 tests)
+├── test_generate_codes.c     ✓ complete (6 tests: code generation)
+├── test_reconstruct_tree.c   ✓ complete (7 tests: tree reconstruction)
+└── test_integration.c        ✓ complete (9 tests: full pipeline)
 
 docs/
 ├── Architecture.md     — module responsibilities, data flow, design decisions

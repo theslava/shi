@@ -146,6 +146,48 @@ add_shi_test(test_args
         src/cli/args.c
 )
 
+add_shi_test(test_generate_codes
+    SOURCES
+        src/core/compress.c
+        src/core/decompress.c
+        src/data_structures/bitstream.c
+        src/data_structures/list.c
+        src/data_structures/node.c
+        src/data_structures/tree.c
+        src/data_structures/bitarray.c
+        src/utils/metric.c
+        src/utils/sort.c
+        src/io/file_io.c
+)
+
+add_shi_test(test_reconstruct_tree
+    SOURCES
+        src/core/compress.c
+        src/core/decompress.c
+        src/data_structures/bitstream.c
+        src/data_structures/list.c
+        src/data_structures/node.c
+        src/data_structures/tree.c
+        src/data_structures/bitarray.c
+        src/utils/metric.c
+        src/utils/sort.c
+        src/io/file_io.c
+)
+
+add_shi_test(test_integration
+    SOURCES
+        src/core/compress.c
+        src/core/decompress.c
+        src/data_structures/bitstream.c
+        src/data_structures/list.c
+        src/data_structures/node.c
+        src/data_structures/tree.c
+        src/data_structures/bitarray.c
+        src/utils/metric.c
+        src/utils/sort.c
+        src/io/file_io.c
+)
+
 # ---------------------------------------------------------------------------
 # Custom targets
 # ---------------------------------------------------------------------------
@@ -162,12 +204,15 @@ add_custom_target(build-tests
         test_utils
         test_decompress_version
         test_args
+        test_generate_codes
+        test_reconstruct_tree
+        test_integration
     COMMENT "Building all test executables..."
 )
 
 # Run all tests (convenience target)
 add_custom_target(run-tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG> --parallel
     COMMENT "Running all tests..."
 )
 
@@ -187,6 +232,9 @@ add_run_test_target(test_tree)
 add_run_test_target(test_utils)
 add_run_test_target(test_decompress_version)
 add_run_test_target(test_args)
+add_run_test_target(test_generate_codes)
+add_run_test_target(test_reconstruct_tree)
+add_run_test_target(test_integration)
 
 # Clean build directory
 add_custom_target(clean-build

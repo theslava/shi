@@ -62,7 +62,7 @@ The compressed file header stores:
 - **Language**: C99
 - **Build System**: CMake 3.15+ (primary and only build system)
 - **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: CTest — 9 test executables, 69 test cases
+- **Testing**: CTest — 12 test executables, 91 test cases
 
 ## Prerequisites
 
@@ -160,6 +160,9 @@ cmake --build . --target run-test-compress
 | `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
 | `test_decompress_version` | `run-test-test_decompress_version` | Version handling in decompression (10 tests) |
 | `test_args` | `run-test-test_args` | CLI argument parsing (31 tests) |
+| `test_generate_codes` | `run-test-test_generate_codes` | Huffman code generation (6 tests) |
+| `test_reconstruct_tree` | `run-test-test_reconstruct_tree` | Tree reconstruction from codes (7 tests) |
+| `test_integration` | `run-test-test_integration` | Full pipeline integration (9 tests) |
 
 ### Test Output
 
@@ -218,7 +221,7 @@ ctest --test-dir build -C Release --output-on-failure
 - ✅ Full compression pipeline (`compress_file()`)
 - ✅ Full decompression pipeline (`decompress_file()`)
 - ✅ Error handling with NULL checks and status codes throughout
-- ✅ All 9 test suites passing (100%)
+- ✅ All 12 test suites passing (100%)
 - ✅ Magic byte validation on decompression
 
 ### Known Limitations
@@ -230,8 +233,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 - Custom buffer sizes via CLI
 - stdin/stdout support
-- Unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`
-- Integration tests with known-good compressed output
+- Flat tree header (v1) — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
 - Performance optimization: switch from insertion sort to heapsort in tree building
 - **Flat tree header (v1)** — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
 
@@ -285,7 +287,9 @@ tests/
 ├── test_utils.c        — 2 tests
 ├── test_decompress_version.c — 10 tests (version handling in decompression)
 ├── test_args.c         — 20 tests (CLI argument parsing)
-└── test_helpers.h      — temp files, comparison, macros
+├── test_generate_codes.c — 6 tests (Huffman code generation)
+├── test_reconstruct_tree.c — 7 tests (tree reconstruction from codes)
+└── test_integration.c  — 9 tests (full pipeline integration)
 
 docs/
 ├── Architecture.md     — module responsibilities, data flow, design decisions

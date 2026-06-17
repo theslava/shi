@@ -111,6 +111,38 @@ Extracted inline argument parsing from `src/main.c` into a dedicated CLI module 
 
 ---
 
+## Phase 4 — Testing Improvements (Completed) ✅
+
+Added 3 new test suites with 22 test cases, bringing total test count to 91 across 12 test suites.
+
+### New Test Suites
+
+| File | Tests | Description |
+|------|-------|-------------|
+| `tests/test_generate_codes.c` | 6 | Unit tests for `generate_codes()` — two-symbol, three-symbol, four-symbol, single-symbol, prefix-free property, Kraft's inequality |
+| `tests/test_reconstruct_tree.c` | 7 | Unit tests for `reconstruct_tree_from_codes()` — two-symbol, three-symbol, single-symbol, roundtrip, NULL handling, deep tree, all-256 symbols |
+| `tests/test_integration.c` | 9 | Integration tests — file structure, binary roundtrip, compression ratio, same-byte, variable codes, large file, determinism, null bytes, mixed bytes |
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `tests/test_generate_codes.c` | **Added** — 6 tests for `generate_codes()` correctness |
+| `tests/test_reconstruct_tree.c` | **Added** — 7 tests for `reconstruct_tree_from_codes()` correctness |
+| `tests/test_integration.c` | **Added** — 9 integration tests for full pipeline |
+| `CMakeLists.txt` | **Modified** — added 3 new test targets, enabled `--parallel` for ctest |
+| `docs/Roadmap.md` | **Updated** — marked Phase 4 as completed with detailed itemization |
+| `docs/Changelog.md` | **Added** — Phase 4 entry |
+| `README.md` | **Updated** — test suite table, project status |
+
+### Test Coverage Summary
+
+- **91 total test cases** across 12 test suites (up from 69 across 9 suites)
+- All 12 test suites pass (100%)
+- Tests cover: code generation, tree reconstruction, prefix-free property, Kraft's inequality, full compression/decompression roundtrip, binary data, edge cases, determinism
+
+---
+
 ## Phase 1 — Bug Fixes & Polish (Completed)
 
 ### Completed Issues
