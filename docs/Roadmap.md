@@ -59,12 +59,62 @@ Extracted the inline argument parsing from `src/main.c` into a dedicated module 
 
 ---
 
-## Phase 4 — Testing Improvements
+## Phase 4 — Testing Improvements (Completed) ✅
 
-- [ ] Write unit tests for `generate_codes()` specifically
-- [ ] Write unit tests for `reconstruct_tree_from_codes()` specifically
-- [ ] Add tests for edge cases: empty file, single-byte file, all-same-byte file, binary data
-- [ ] Add integration tests with known-good compressed output
+All Phase 4 items completed. Added 3 new test suites with 19 additional test cases.
+
+### Completed Items
+
+- ✅ **`tests/test_generate_codes.c`** — 6 tests verifying `generate_codes()` produces valid Huffman codes:
+  - Two-symbol tree (A=3, B=3) → both get 1-bit codes
+  - Three-symbol tree (A=3, B=2, C=1) → A=0(1bit), C=10(2bit), B=11(2bit)
+  - Four equal-frequency symbols → all get 2-bit distinct codes
+  - Single-symbol tree → code=0, length=1
+  - Prefix-free property verification
+  - Kraft's inequality verification (sum of 2^(-code_length) ≤ 1)
+
+- ✅ **`tests/test_reconstruct_tree.c`** — 7 tests verifying `reconstruct_tree_from_codes()`:
+  - Two-symbol reconstruction (root → left:A, right:B)
+  - Three-symbol reconstruction (root → left:A, right:parent → left:C, right:B)
+  - Single-symbol reconstruction
+  - Roundtrip: generate_codes → reconstruct → decode (verifies codes match)
+  - NULL pointer handling
+  - Deep tree (5 symbols with varying code lengths)
+  - All 256 symbols reconstruction
+
+- ✅ **`tests/test_integration.c`** — 9 integration tests verifying full pipeline:
+  - Compressed file structure (magic bytes, header fields)
+  - Binary data roundtrip (all 256 byte values)
+  - Compression ratio on repetitive data (< 50% for single-symbol)
+  - All-same-byte file roundtrip
+  - Text file variable-length codes (max > min code length)
+  - Large file (10KB) roundtrip
+  - Deterministic output (same input → identical compressed output)
+  - Null-byte-only file roundtrip
+  - Mixed null/non-null bytes roundtrip
+
+- ✅ Existing edge case coverage (in `test_compress.c`):
+  - Empty file, single-byte file, single-symbol file, binary data — all already tested
+
+- ✅ Updated `CMakeLists.txt` with new test targets and `--parallel` for ctest
+
+### Test Suite Summary
+
+| Test Target | Tests | Description |
+|-------------|-------|-------------|
+| `test_bitstream` | 7 | Bitstream reader/writer |
+| `test_compress` | 13 | Compression roundtrip, edge cases, header validation |
+| `test_file_reader` | 5 | File reader |
+| `test_file_writer` | 4 | File writer |
+| `test_list` | 5 | Linked list |
+| `test_tree` | 3 | Huffman tree |
+| `test_utils` | 2 | Utility functions |
+| `test_decompress_version` | 10 | Version handling in decompression |
+| `test_args` | 20 | CLI argument parsing |
+| **`test_generate_codes`** | **6** | **Huffman code generation** |
+| **`test_reconstruct_tree`** | **7** | **Tree reconstruction from codes** |
+| **`test_integration`** | **9** | **Full pipeline integration** |
+| **Total** | **91** | |
 
 ## Phase 5 — Flat Tree Header (Optimized Decompression)
 
