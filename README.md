@@ -1,4 +1,4 @@
-﻿# shi — Huffman Compression Implementation
+# shi — Huffman Compression Implementation
 
 A complete, production-ready **Huffman compression/decompression** tool written in C.
 
@@ -21,7 +21,7 @@ The codebase is organized into modular layers:
 | ------- | --------- | --------------- |
 | **I/O** | `file_io.c/h` | Buffered file reader (`fr_fd`) and writer (`fw_fd`) |
 | **Data Structures** | `node.c/h`, `tree.c/h`, `list.c/h` | Huffman tree node, tree builder, sorted doubly-linked list |
-| **Sorting** | `sort.c/h` | Heapsort helpers for ordering nodes by frequency weight |
+| **Sorting** | `sort.c/h` | Insertion sort for ordering nodes by frequency weight (heapsort functions declared but unused) |
 | **Metrics** | `metric.c/h` | Byte-frequency counter over input data |
 | **Bitstream** | `bitstream.c/h`, `bitarray.c/h` | MSB-first bit-level reader/writer with auto-flush |
 | **Core** | `compress.c/h`, `decompress.c/h` | High-level compression & decompression pipelines |
@@ -59,10 +59,10 @@ The compressed file header stores:
 
 ## Tools Used
 
-- **Language**: C99
+- **Language**: C23
 - **Build System**: CMake 3.15+ (primary and only build system)
-- **Compiler Flags**: `-Wall -Wextra -g` (GCC/Clang), `/W4` (MSVC)
-- **Testing**: CTest — 12 test executables, 91 test cases
+- **Compiler Flags**: `-Wall -Wextra -Wpedantic -g` (GCC/Clang), `/W4` (MSVC)
+- **Testing**: CTest — 12 test executables, 114 test cases
 
 ## Prerequisites
 
@@ -152,14 +152,14 @@ cmake --build . --target run-test-compress
 | Test Target | Convenience Target | Description |
 |-------------|-------------------|-------------|
 | `test_bitstream` | `run-test-test_bitstream` | Bitstream reader/writer (7 tests) |
-| `test_compress` | `run-test-test_compress` | Compression roundtrip (3 tests) |
+| `test_compress` | `run-test-test_compress` | Compression roundtrip (13 tests) |
 | `test_file_reader` | `run-test-test_file_reader` | File reader (5 tests) |
 | `test_file_writer` | `run-test-test_file_writer` | File writer (4 tests) |
 | `test_list` | `run-test-test_list` | Linked list (5 tests) |
 | `test_tree` | `run-test-test_tree` | Huffman tree (3 tests) |
 | `test_utils` | `run-test-test_utils` | Utility functions (2 tests) |
 | `test_decompress_version` | `run-test-test_decompress_version` | Version handling in decompression (10 tests) |
-| `test_args` | `run-test-test_args` | CLI argument parsing (31 tests) |
+| `test_args` | `run-test-test_args` | CLI argument parsing (43 tests) |
 | `test_generate_codes` | `run-test-test_generate_codes` | Huffman code generation (6 tests) |
 | `test_reconstruct_tree` | `run-test-test_reconstruct_tree` | Tree reconstruction from codes (7 tests) |
 | `test_integration` | `run-test-test_integration` | Full pipeline integration (9 tests) |
@@ -227,15 +227,12 @@ ctest --test-dir build -C Release --output-on-failure
 ### Known Limitations
 
 - Single-symbol edge case is handled but could be more robust
-- Entire file is loaded into memory for frequency analysis (fine for the 256-byte alphabet)
 
 ### Future Enhancements (v2+)
 
 - Custom buffer sizes via CLI
 - stdin/stdout support
 - Flat tree header (v1) — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
-- Performance optimization: switch from insertion sort to heapsort in tree building
-- **Flat tree header (v1)** — replace per-symbol code storage with serialized flat tree for faster decompression (see [Roadmap](docs/Roadmap.md))
 
 ## File Index
 
@@ -255,7 +252,7 @@ include/
 │   └── file_io.h       — buffered reader + writer
 └── utils/
     ├── metric.h        — frequency counter
-    └── sort.h          — heapsort helpers
+    └── sort.h          — insertion sort for node ordering (heapsort helpers declared but unused)
 
 src/
 ├── core/
@@ -286,7 +283,7 @@ tests/
 ├── test_tree.c         — 3 tests
 ├── test_utils.c        — 2 tests
 ├── test_decompress_version.c — 10 tests (version handling in decompression)
-├── test_args.c         — 20 tests (CLI argument parsing)
+├── test_args.c         — 43 tests (CLI argument parsing)
 ├── test_generate_codes.c — 6 tests (Huffman code generation)
 ├── test_reconstruct_tree.c — 7 tests (tree reconstruction from codes)
 └── test_integration.c  — 9 tests (full pipeline integration)

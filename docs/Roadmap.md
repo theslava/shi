@@ -49,7 +49,7 @@ Extracted the inline argument parsing from `src/main.c` into a dedicated module 
 
 - ✅ `src/cli/args.c` — Zero-dependency manual parser supporting short (`-v`), long (`--verbose`), combined (`-vh`), and `--` separator flags
 - ✅ `include/cli/args.h` — Public API (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`)
-- ✅ `tests/test_args.c` — 20 tests covering every flag, error path, and edge case
+- ✅ `tests/test_args.c` — 43 tests covering every flag, error path, and edge case
 - ✅ `src/main.c` reduced from 124 → ~75 lines (40% smaller)
 - ✅ Unknown flag detection (`--bogus` → error, was silently misinterpreted)
 - ✅ Combined short flags (`-vh` → `-v` then `-h`)
@@ -61,7 +61,7 @@ Extracted the inline argument parsing from `src/main.c` into a dedicated module 
 
 ## Phase 4 — Testing Improvements (Completed) ✅
 
-All Phase 4 items completed. Added 3 new test suites with 19 additional test cases.
+All Phase 4 items completed. Added 3 new test suites with 22 additional test cases.
 
 ### Completed Items
 
@@ -110,11 +110,11 @@ All Phase 4 items completed. Added 3 new test suites with 19 additional test cas
 | `test_tree` | 3 | Huffman tree |
 | `test_utils` | 2 | Utility functions |
 | `test_decompress_version` | 10 | Version handling in decompression |
-| `test_args` | 20 | CLI argument parsing |
+| `test_args` | 43 | CLI argument parsing |
 | **`test_generate_codes`** | **6** | **Huffman code generation** |
 | **`test_reconstruct_tree`** | **7** | **Tree reconstruction from codes** |
 | **`test_integration`** | **9** | **Full pipeline integration** |
-| **Total** | **91** | |
+| **Total** | **114** | |
 
 ## Phase 5 — Flat Tree Header (Optimized Decompression)
 

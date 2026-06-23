@@ -38,7 +38,7 @@ Examples:
 | `include/cli/args.h` | **Modified** — `shi_args_t` restructured: removed `output_file`/`output_specified`, added `command` (from mode flag), `input_file` (from `-f`); updated `shi_parse_args()` docstring |
 | `src/cli/args.c` | **Rewritten** — new parser supporting `-c`/`--compress`, `-d`/`--decompress`, `-f`/`--file`, `-V`/`--version`; updated `shi_print_usage()` with new examples |
 | `src/main.c` | **Modified** — removed `output_file`/`output_specified` handling; output derived via `derive_default_output()` |
-| `tests/test_args.c` | **Rewritten** — 31 tests covering new CLI (mode flags, file flag, combined flags, error cases, flag ordering) |
+| `tests/test_args.c` | **Rewritten** — 43 tests covering new CLI (mode flags, file flag, combined flags, error cases, flag ordering) |
 | `include/core/version.h` | **Restored** — `SHI_COMPRESSED_EXT` constant (was lost during stash) |
 | `docs/Changelog.md` | **Added** — Phase 4 entry documenting this change |
 | `docs/Architecture.md` | **Updated** — CLI usage reference |
@@ -62,7 +62,7 @@ Established infrastructure for multiple file format versions.
 | `src/main.c` | **Modified** — added `#include "core/version.h"`, `--version <N>` argument parsing with bounds checking, `switch(version)` compress dispatch, magic byte detection + `switch(detected_version)` decompress dispatch |
 | `src/cli/args.c` | **Added** — zero-dependency CLI argument parser (short/long flags, combined flags, `--` separator, unknown flag detection) |
 | `include/cli/args.h` | **Added** — public API for CLI args (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`) |
-| `tests/test_args.c` | **Added** — 20 tests covering every flag, error path, and edge case |
+| `tests/test_args.c` | **Added** — 43 tests covering every flag, error path, and edge case |
 | `src/core/compress.c` | **Modified** — added `shi_magic_v0[]` definition, `shi_compress_v0()` wrapper delegating to `compress_file()` |
 | `src/core/decompress.c` | **Modified** — added `shi_decompress_v0()` wrapper delegating to `decompress_file()` |
 
@@ -99,7 +99,7 @@ Extracted inline argument parsing from `src/main.c` into a dedicated CLI module 
 | `src/cli/args.c` | **Added** — zero-dependency manual parser supporting short/long flags, combined flags (`-vh`), `--` separator, unknown flag detection |
 | `include/cli/args.h` | **Added** — public API (`shi_args_t`, `shi_parse_args()`, `shi_print_usage()`, `shi_args_error_msg()`) |
 | `src/main.c` | **Modified** — replaced inline while-loop parsing with `shi_parse_args()` call, reduced from 124 → ~75 lines |
-| `tests/test_args.c` | **Added** — 20 tests covering every flag, error path, and edge case |
+| `tests/test_args.c` | **Added** — 43 tests covering every flag, error path, and edge case |
 | `CMakeLists.txt` | **Modified** — added `src/cli/args.c` to main build, added `test_args` test target |
 
 **Enhancements over the original inline parser:**
@@ -113,7 +113,7 @@ Extracted inline argument parsing from `src/main.c` into a dedicated CLI module 
 
 ## Phase 4 — Testing Improvements (Completed) ✅
 
-Added 3 new test suites with 22 test cases, bringing total test count to 91 across 12 test suites.
+Added 3 new test suites with 22 test cases, bringing total test count to 114 across 12 test suites.
 
 ### New Test Suites
 
@@ -137,7 +137,7 @@ Added 3 new test suites with 22 test cases, bringing total test count to 91 acro
 
 ### Test Coverage Summary
 
-- **91 total test cases** across 12 test suites (up from 69 across 9 suites)
+- **114 total test cases** across 12 test suites (up from 69 across 9 suites)
 - All 12 test suites pass (100%)
 - Tests cover: code generation, tree reconstruction, prefix-free property, Kraft's inequality, full compression/decompression roundtrip, binary data, edge cases, determinism
 

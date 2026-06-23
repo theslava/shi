@@ -6,16 +6,15 @@ Implement a complete **Huffman compression/decompression** tool in C with a focu
 
 ## Current Phase
 
-### Phase 3 — File Format Versioning (Completed) ✅
+### Phase 5 — Flat Tree Header (Not Started)
 
-All core functionality, versioning infrastructure, and CLI argument parsing are complete.
+Phase 5 — Flat Tree Header (v1.0): replace per-symbol code storage with serialized flat tree in the header for faster decompression.
 
 ## Immediate Next Steps
 
-1. Implement Phase 4 (Flat Tree Header v1.0) — see [Roadmap](docs/Roadmap.md) Section 7
-2. Write unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`
-3. Add integration tests with known-good compressed output
-
+1. Implement Phase 5 (Flat Tree Header v1.0) — see [Roadmap](docs/Roadmap.md) Section 5
+2. ~~Write unit tests for `generate_codes()` and `reconstruct_tree_from_codes()`~~ ✅ (already in test_generate_codes.c and test_reconstruct_tree.c)
+3. ~~Add integration tests with known-good compressed output~~ ✅ (already in test_integration.c)
 ## Documentation Structure
 
 - **[Architecture](docs/Architecture.md)**: Module responsibilities, data flow, key design decisions, and file index.

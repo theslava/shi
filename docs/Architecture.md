@@ -7,7 +7,7 @@
 | `file_io.c / file_io.h` | Buffered file reader (`fr_fd`) and writer (`fw_fd`) with configurable buffer sizes |
 | `metric.c / metric.h` | Count byte frequencies from input data |
 | `node.c / node.h` | Huffman tree node struct (`byte`, `weight`, `left`, `right`, `next`) and helpers |
-| `sort.c / sort.h` | Heapsort helpers for ordering nodes by weight; `sort_nodes_by_weight()` wrapper |
+| `sort.c / sort.h` | Insertion sort for ordering nodes by weight; heapsort helpers declared but unused |
 | `list.c / list.h` | Doubly-linked sorted list for building the tree |
 | `tree.c / tree.h` | Build Huffman tree from frequency metric; `generate_codes()` traversal |
 | `bitstream.c / bitstream.h` | Bit-level reader (`bitstream`) + writer (`bitstream_writer`), MSB-first |
@@ -42,7 +42,7 @@ Compressed input → read_header() [magic + num_symbols + file_size + per-symbol
 2. **Buffered I/O**: Both reader and writer use a configurable buffer size (default 4096) to minimize system calls.
 3. **Static node array in tree**: `tree->nodes[512]` is allocated as part of the `tree` struct.
 4. **Header format**: `[4B LE: num_symbols] [4B LE: file_size] [per symbol: 1B byte_value + 1B code_length + 4B LE code_value]`.
-5. **Magic bytes & versioning**: All `.huf` files start with `"SHI<version>"` (0x53, 0x48, 0x49, `<version_byte>`). The 4th byte encodes the file format version. Currently only version 0 (`0x00`) is supported. Decompression reads the magic bytes first and dispatches to the appropriate version handler.
+5. **Magic bytes & versioning**: All `.shi` files start with `"SHI<version>"` (0x53, 0x48, 0x49, `<version_byte>`). The 4th byte encodes the file format version. Currently only version 0 (`0x00`) is supported. Decompression reads the magic bytes first and dispatches to the appropriate version handler.
 6. **Error handling**: Every function returns a status indicator (`NULL` on allocation failure, `-1` on I/O error).
 7. **Cross-platform compatibility**: Build system is CMake-only. CMake auto-detects the platform and selects the appropriate generator (Ninja, MSVC, or GCC/Clang) and compiler flags.
 
@@ -89,7 +89,7 @@ src/
 tests/
 ├── test_compress.c     ✓ complete (13 tests: roundtrip, empty, repeated, single-byte, single-symbol, binary, null-byte, bad magic, truncated header, zero symbols, bad num_symbols, truncated data, empty file)
 ├── test_decompress_version.c ✓ complete (10 tests: version handling)
-├── test_args.c         ✓ complete (20 tests: CLI argument parsing)
+├── test_args.c         ✓ complete (43 tests: CLI argument parsing)
 ├── test_helpers.h      ✓ complete
 ├── test_bitstream.c    ✓ complete (7 tests: reader/writer, EOF, NULL)
 ├── test_file_reader.c  ✓ complete (5 tests)
