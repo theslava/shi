@@ -122,7 +122,6 @@ node* list_get_head(const list* l) {
 }
 
 list* list_append(list* l, node* n) {
-    /* TODO: Append a node to the end of the list */
     if (l == NULL || n == NULL)
         return l;
 
